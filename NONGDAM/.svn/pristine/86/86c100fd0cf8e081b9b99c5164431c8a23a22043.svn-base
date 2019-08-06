@@ -1,0 +1,97 @@
+package kr.or.ddit.vo;
+
+
+// <bean name="memberVO" class="kr.or.ddit.vo.MemberVO"></bean>
+public class MemberVO {
+
+	// cmd => sqlplus id/pwd@localhost
+	// SELECT 'private String ' || lower(COLUMN_NAME)||';'
+	// FROM USER_TAB_COLUMNS
+	// WHERE TABLE_NAME = 'MEMBER';
+
+	private String rnum;
+	private String mber_id;
+	private String mber_password;
+	private String mber_mbtlnum;
+	private String mber_nm;
+	private String mber_email;
+	private String mber_zip;
+	private String mber_bass_adres;
+	private String mber_detail_adres;
+	private String mber_ncnm;
+	private String mber_farmng_adres;
+	private String mber_seed;
+
+	public String getMber_id() {
+		return mber_id;
+	}
+	public void setMber_id(String mber_id) {
+		this.mber_id = mber_id;
+	}
+	public String getMber_password() {
+		return mber_password;
+	}
+	public void setMber_password(String mber_password) {
+		this.mber_password = mber_password;
+	}
+	public String getMber_mbtlnum() {
+		return mber_mbtlnum;
+	}
+	public void setMber_mbtlnum(String mber_mbtlnum) {
+		this.mber_mbtlnum = mber_mbtlnum;
+	}
+	public String getMber_nm() {
+		return mber_nm;
+	}
+	public void setMber_nm(String mber_nm) {
+		this.mber_nm = mber_nm;
+	}
+	public String getMber_email() {
+		return mber_email;
+	}
+	public void setMber_email(String mber_email) {
+		this.mber_email = mber_email;
+	}
+	public String getMber_zip() {
+		return mber_zip;
+	}
+	public void setMber_zip(String mber_zip) {
+		this.mber_zip = mber_zip;
+	}
+	public String getMber_bass_adres() {
+		return mber_bass_adres;
+	}
+	public void setMber_bass_adres(String mber_bass_adres) {
+		this.mber_bass_adres = mber_bass_adres;
+	}
+	public String getMber_detail_adres() {
+		return mber_detail_adres;
+	}
+	public void setMber_detail_adres(String mber_detail_adres) {
+		this.mber_detail_adres = mber_detail_adres;
+	}
+	public String getMber_ncnm() {
+		return mber_ncnm;
+	}
+	public void setMber_ncnm(String mber_ncnm) {
+		this.mber_ncnm = mber_ncnm;
+	}
+	public String getMber_farmng_adres() {
+		return mber_farmng_adres;
+	}
+	public void setMber_farmng_adres(String mber_farmng_adres) {
+		this.mber_farmng_adres = mber_farmng_adres;
+	}
+	public String getMber_seed() {
+		return mber_seed;
+	}
+	public void setMber_seed(String mber_seed) {
+		this.mber_seed = mber_seed;
+	}
+	public String getRnum() {
+		return rnum;
+	}
+	public void setRnum(String rnum) {
+		this.rnum = rnum;
+	}
+}

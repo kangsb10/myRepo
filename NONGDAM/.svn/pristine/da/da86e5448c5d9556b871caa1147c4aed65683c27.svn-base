@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+		  "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+		  "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+	<!-- 타일즈 설정파일 한개 이상의 definition이 반드시 선언되어야 함.
+		 definition은 다른 definition을 상속할 수 있음. 
+	-->
+	<definition name="cropsdoctor" template="/WEB-INF/views/user/mainTemplate.jsp">
+		<put-attribute name="title" value="CROPS_DOCTOR"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/cropsdoctor/layout/header.jsp"></put-attribute>
+		<put-attribute name="footer" value=""></put-attribute>
+	</definition>
+	
+	<definition name="user/main" template="/WEB-INF/views/user/mainTemplate.jsp">
+		<put-attribute name="title" value="tiles-def에서 선언된 title"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/user/layout/header.jsp"></put-attribute>
+		<put-attribute name="footer" value="/WEB-INF/views/user/layout/footer.jsp"></put-attribute>
+	</definition>
+	
+	<definition name="user/shop" template="/WEB-INF/views/user/mainTemplate.jsp">
+		<put-attribute name="title" value="ShoppingMall"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/user/layout/header.jsp"></put-attribute>
+		<put-attribute name="footer" value="/WEB-INF/views/user/shopping/layout/footer.jsp"></put-attribute>
+	</definition>
+	
+	
+	<definition name="admin/main" template="/WEB-INF/views/admin/mainTemplate.jsp">
+		<put-attribute name="title" value="tiles-def에서 선언된 admin title"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/admin/inc/header.jsp"></put-attribute>
+	</definition>
+	
+<!-- 	<definition name="admin/cropsdoctor" template="/WEB-INF/views/admin/mainTemplate.jsp"> -->
+<!-- 		<put-attribute name="title" value="tiles-def에서 선언된 admin title"></put-attribute> -->
+<!-- 		<put-attribute name="header" value="/WEB-INF/views/admin/inc/header.jsp"></put-attribute> -->
+<!-- 	</definition> -->
+	
+	
+	<definition name="user/cm/cmaddr" template="/WEB-INF/views/user/mainTemplate_mod.jsp">
+		<put-attribute name="title" value="tiles-def에서 선언된 title"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/user/layout/header_mod.jsp"></put-attribute>
+<!-- 		<put-attribute name="footer" value="/WEB-INF/views/user/layout/footer.jsp"></put-attribute> -->
+		<put-attribute name="left" value="/WEB-INF/views/user/layout/left.jsp"></put-attribute>
+	</definition>
+	
+	<definition name="join" template="/WEB-INF/views/user/mainTemplate_login.jsp">
+		<put-attribute name="title" value="로긴"></put-attribute>
+		<put-attribute name="header" value="/WEB-INF/views/user/layout/header_login.jsp"></put-attribute>
+	</definition>
+	<!--
+		
+		액션클래스.process(request, response){
+			return "/user/freeboard/freeboardList.tiles";
+			return "/user/freeboard/freeboardForm.tiles";
+			return "/user/freeboard/freeboardView.tiles";
+			return "/user/freeboard/freeboardReplyForm.tiles";
+			return "/user/member/memberList.tiles";
+		}
+		
+	 -->
+	
+<!-- 	<definition name="user/shop/*" extends="user/shop"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/shop/{1}.jsp"></put-attribute> -->
+<!-- 	</definition> -->
+	
+	<definition name="cropsdoctor/*" extends="cropsdoctor">
+		<put-attribute name="content" value="/WEB-INF/views/cropsdoctor/{1}.jsp"></put-attribute>
+	</definition>
+		
+	<definition name="user/*/*" extends="user/main">
+		<put-attribute name="content" value="/WEB-INF/views/user/{1}/{2}.jsp"></put-attribute>	
+	</definition>
+	<definition name="user/*/*" extends="user/main">
+		<put-attribute name="content" value="/WEB-INF/views/user/{1}/{2}.jsp"></put-attribute>	
+	</definition>
+	<definition name="admin/*/*" extends="admin/main">
+		<put-attribute name="content" value="/WEB-INF/views/admin/{1}/{2}.jsp"></put-attribute>	
+	</definition>
+	<definition name="member/*" extends="user/main">
+		<put-attribute name="content" value="/WEB-INF/views/member/{1}.jsp"></put-attribute>
+	</definition>
+<!-- 	<definition name="join/*" extends="user/main"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/join/{1}.jsp"></put-attribute> -->
+<!-- 	</definition> -->
+	<definition name="join/*" extends="join">
+		<put-attribute name="content" value="/WEB-INF/views/join/{1}.jsp"></put-attribute>
+	</definition>
+	
+	<definition name="user/member/proFile/*" extends="user/main">
+		<put-attribute name="header" value="/WEB-INF/views/user/member/proFile/header.jsp"></put-attribute>
+		<put-attribute name="content" value="/WEB-INF/views/user/member/proFile/{1}.jsp"></put-attribute>
+	</definition>
+	<definition name="user/community/cafe/*" extends="user/cm/cmaddr">
+		<put-attribute name="content" value="/WEB-INF/views/user/community/cafe/{1}.jsp"></put-attribute>	
+	</definition>
+	
+</tiles-definitions>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="egmn">
+   <typeAlias alias="egmnVO" type="kr.or.ddit.vo.EmergencyMbtlNumVO"></typeAlias>
+   
+   
+   <sql id="selectAll">
+      SELECT *
+         FROM EMERGENCYMBTLNUM
+		 WHERE MBER_ID = #mber_id#
+   </sql>
+   
+   
+   
+   <select id="egmnList"  parameterClass="map" resultClass="egmnVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+   <insert id="insertegmn" parameterClass="egmnVO">
+   	INSERT INTO EMERGENCYMBTLNUM(EGMN_NO, MBER_ID, EGMN_MBTLNUM, EGMN_NM)
+				VALUES(EMERGENCYMBTLNUM_SEQ.NEXTVAL, #mber_id#, #egmn_mbtlnum#, #egmn_nm#) 
+   </insert>
+   
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(*)
+   			  FROM EMERGENCYMBTLNUM 
+   			 WHERE MBER_ID = #mber_id# 
+   </select>
+</sqlMap>    
+
+
+
+
+
+
+
+

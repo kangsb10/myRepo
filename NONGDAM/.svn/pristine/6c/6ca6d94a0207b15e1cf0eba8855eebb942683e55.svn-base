@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="farmingfileitem">
+	<typeAlias alias="farmingfileitemVO" type="kr.or.ddit.vo.FarmingFileItemVO"></typeAlias>
+	
+	<statement id="farmingFileItemList" resultClass="farmingfileitemVO">
+		SELECT * 
+		 FROM FARMING_DIARY_FILE_ITEM 
+		 WHERE FARM_DIARY_NO = #farm_diary_no#
+	</statement>
+	
+	<insert id="insertFarmingFileItem" parameterClass="farmingfileitemVO">
+		<selectKey keyProperty="farm_diary_file_seq">
+			SELECT FARMING_DIARY_FILE_ITEM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO FARMING_DIARY_FILE_ITEM(FARM_DIARY_FILE_SEQ,        
+												 FARM_DIARY_NO,       
+												 FARM_DIARY_FILE_NAME,        
+												 FARM_DIARY_FILE_SAVE_NAME,   
+												 FARM_DIARY_FILE_CONTENT_TYPE,
+												 FARM_DIARY_FILE_SIZE)		
+										 VALUES(#farm_diary_file_seq#,        
+												#farm_diary_no#,       
+												#farm_diary_file_name#,        
+												#farm_diary_file_save_name#,   
+												#farm_diary_file_content_type#,
+												#farm_diary_file_size#)
+	</insert>
+
+	<select id="farmingFileItemInfo" parameterClass="map" resultClass="farmingfileitemVO">
+			SELECT * FROM FARMING_DIARY_FILE_ITEM WHERE FARM_DIARY_FILE_SEQ = #farm_diary_file_seq#	
+	</select>
+</sqlMap>    
+
+
+
+
+
+
+
+
+

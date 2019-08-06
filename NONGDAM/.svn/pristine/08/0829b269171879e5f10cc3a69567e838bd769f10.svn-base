@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="cropsdoctor">
+	
+	<typeAlias alias="diseaseVO" type="kr.or.ddit.vo.DiseaseVO"/>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM DISEASE
+	</sql>
+	
+	
+	<select id="diseaseInfo" parameterClass="map" resultClass="diseaseVO">
+		<include refid="selectAll"/>
+		 WHERE CLASS_NM = #class_nm#
+	</select>
+	
+	<select id="diseaseInfoForName" parameterClass="map" resultClass="diseaseVO">
+		<include refid="selectAll"/>
+		WHERE DISEASE_NM = #disease_nm#
+	</select>
+	
+	<select id="selectCatNm" parameterClass="map" resultClass="String">
+		SELECT 
+			CAT_NM 
+		  FROM 
+		  	CATEGORY 
+		 WHERE CAT_NO = 
+		 	(SELECT CAT_NO FROM SPECIES WHERE SPECIES_KOR_NM = #species_kor_nm#)
+	</select>
+	
+	<select id="selectGoodsId" parameterClass="map" resultClass="String">
+		SELECT GOODS_ID 
+		  FROM GOODS 
+		 WHERE GOODS_NM = #goods_nm#
+	</select>
+	
+</sqlMap>    

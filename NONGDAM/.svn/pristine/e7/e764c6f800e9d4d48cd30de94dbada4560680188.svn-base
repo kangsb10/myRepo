@@ -1,0 +1,64 @@
+package kr.or.ddit.service.sfms;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.or.ddit.dao.sfms.ISfmsDao;
+import kr.or.ddit.vo.FarmVO;
+import kr.or.ddit.vo.SensorVO;
+
+@Service
+public class ISfmsServiceImpl implements ISfmsService {
+
+	@Autowired
+	private ISfmsDao dao;
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public List<FarmVO> FarmList(Map<String, String> params) throws Exception {
+		return dao.FarmList(params);
+	}
+
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public FarmVO idChech(Map<String, String> params) throws Exception {
+		return dao.idCheck(params);
+	}
+
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public String searchCode(Map<String, String> params)
+			throws Exception {
+		return dao.searchCode(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor={Exception.class})
+	@Override
+	public void insertFarm(FarmVO farmInfo) throws Exception {
+		dao.insertFarm(farmInfo);
+	}
+//
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public FarmVO farmInfo(Map<String, String> params) throws Exception {
+		return dao.farmInfo(params);
+	}
+
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor={Exception.class})
+	@Override
+	public int updateFarm(FarmVO farmInfo) throws Exception {
+		return dao.updateFarm(farmInfo);
+	}
+
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor={Exception.class})
+	@Override
+	public void deleteFarm(Map<String, String> params) throws Exception {
+		dao.deleteFarm(params);
+	}
+
+}

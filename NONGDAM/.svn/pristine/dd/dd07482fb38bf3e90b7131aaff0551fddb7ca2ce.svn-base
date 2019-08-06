@@ -1,0 +1,313 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="${pageContext.request.contextPath }/css/cropsDoctor.css" rel="stylesheet" />
+<!-- Generic page styles -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/cropsdoctor/style.css">
+<!-- blueimp Gallery styles -->
+<link rel="stylesheet" href="https://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/cropsdoctor/jquery.fileupload.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/cropsdoctor/jquery.fileupload-ui.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/cropsdoctor/cropsdoctor.css">
+
+<!-- CSS adjustments for browsers with JavaScript disabled -->
+<!-- <noscript> -->
+<%-- <link rel="stylesheet" href="${pageContext.request.contextPath }/css/cropsdoctor/jquery.fileupload-noscript.css"> --%>
+<!-- </noscript> -->
+<!-- <noscript> -->
+<%-- <link rel="stylesheet" href="${pageContext.request.contextPath }/css/cropsdoctor/jquery.fileupload-ui-noscript.css"> --%>
+<!-- </noscript> -->
+<link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap&subset=korean" rel="stylesheet">
+<link href="${pageContext.request.contextPath }/css/cropsdoctor/datetimepicker/bootstrap-datetimepicker.css" rel="stylesheet">
+<!-- NAVER maps API -->
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=f3n62sa3jv"></script>
+
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/jquery.form.min.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/cropsdoctor/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript">
+$(function(){
+$(document).ready(function(){
+
+	send("인사");
+	
+	$("#chatContent").keypress(function(e){
+		var keyCode = e.keyCode;
+		if(keyCode == 13){
+			$("#sendBtn").click();
+		}
+	});
+	
+	$("#sendBtn").on("click",function(){
+		var myWord = $("#chatContent").val().trim();	// 전송할 입력값
+		if(myWord == null || myWord == ""){
+			alert('메세지를 입력하세요');
+			return false;
+		}
+		send(myWord);
+	});
+	
+	$(document).on("change","input[name='imgFile']",function(){
+// 	$("input[name='imgFile']").on("change", function(){
+		hiddenImgForm();
+		readURL(this);
+		// ajax
+		printDetail();
+	});
+	
+// 	const mediaRecorder;
+	$('#voiceSwitch').on('click', function () {
+		if($("#voiceSwitch").attr("class") == "btn btn-default"){
+			// 켜기
+			$("#voiceSwitch").attr("class", "btn btn-success");
+			$("#voiceSwitch").html("ON");
+			
+			// 마이크 켜기
+			navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+			    const mediaRecorder = new MediaRecorder(stream);
+			    mediaRecorder.start();
+				console.log("mediaRecorder.start()");
+				
+			    const audioChunks = [];
+			    mediaRecorder.addEventListener("dataavailable", event => {
+			      audioChunks.push(event.data);
+			    });
+
+				mediaRecorder.addEventListener("stop", () => {
+					const audioBlob = new Blob(audioChunks);
+					
+					var formData = new FormData();
+					formData.append("recordFile", audioBlob);
+					
+					$.ajax({
+						url : "/naver/csr.do",
+						enctype : "multipart/form-data",
+						data : formData,
+						dataType : "json",
+						type : "post",
+						contentType : false,
+						processData : false,
+						success : function(result){
+							
+							var text = JSON.parse(result.STT);
+							var resp = text.text;
+							insertHtml("나", resp);
+							
+						},
+						error : function(error){
+							console.log(error.status + " , 등등");
+						}
+					 
+					});
+					
+			    });
+				
+			    $('#voiceSwitch').on("click",function(){
+			    	if(mediaRecorder.state != "inactive"){
+				    	mediaRecorder.stop();
+			    	}
+			    	console.log("mediaRecorder.stop();");
+			    });
+			    
+			  });
+			
+		}else{
+			// 끄기
+			$("#voiceSwitch").attr("class", "btn btn-default");
+			$("#voiceSwitch").html("OFF");
+			
+			// record off
+			
+		}
+	});
+	
+})
+</script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/cropsdoctor/cropsDoctor.js"></script>
+<title>EungAe</title>
+</head>
+<body>
+	<div class="container bootstrap snippet">
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="portlet portlet-default">
+					<div class="portlet-heading">
+						<div class="portlet-title">
+							<h4>
+								<i class="fa fa-circle text-green"></i>Crops Doctor
+							</h4>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div id="chat" class="panel-collapse collapse in">
+						<div>
+							<div id="chatList" class="portlet-body chat-widget"
+								style="overflow-y: auto; width: auto; height: 500px;"></div>
+						</div>
+						<!-- footer -->
+						<div class="portlet-footer">
+							<div class="row">
+								<div class="form-group col-xs-12">
+									<input type="text" id="chatContent" class="form-control" placeholder="메시지 입력하세요">
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-3" align="left">
+									<button type="button" id="sendBtn" class="btn btn-default pull-right">전송</button>
+								</div>
+								<div class="col-xs-4">
+								
+								</div>
+								<div class="col-xs-5 imgFormDiv" >
+								
+									<span id="imgSpan" class="btn btn-success fileinput-button" style="visibility: hidden;"> <span>사진</span>
+										<form id="imgForm" enctype="multipart/form-data" method="post">
+											<input id="imgFile" type="file" name="imgFile" accept="image/*;capture=camera"> 
+											<input type="hidden" name="object" value="">
+											<input type="hidden" name="method" value="">
+											<input type="hidden" name="entity" value="">
+											<input type="hidden" name="purpose" value="">
+											<input type="hidden" name="isAlarmed" value="">
+										</form>
+									</span>
+									
+									<button id="voiceSwitch" class="btn btn-default">OFF</button>
+									<form style="display: none" id="recordForm" enctype="multipart/form-data" method="post">
+										<input type="file" name="recordFile">
+									</form>
+									
+								</div>
+<!-- 								<div class="col-xs-1" style="background-color: red;">&nbsp;</div> -->
+<!-- 									<button type="button" id="notifyBtn">알림</button> -->
+<!-- 								<div class="col-xs-2" style="background-color: green;"> -->
+									
+<!-- 								</div> -->
+<!-- 								<div class="col-xs-1 imgFormDiv" style="background-color: blue"> -->
+<!-- 									<span class="btn btn-success fileinput-button"> <span>사진</span> -->
+<!-- 										<form id="imgForm" enctype="multipart/form-data" method="post"> -->
+<!-- 											<input id="imgFile" type="file" name="imgFile" accept="image/*;capture=camera">  -->
+<!-- 											<input type="hidden" name="object" value=""> -->
+<!-- 											<input type="hidden" name="method" value=""> -->
+<!-- 											<input type="hidden" name="entity" value=""> -->
+<!-- 											<input type="hidden" name="purpose" value=""> -->
+<!-- 											<input type="hidden" name="isAlarmed" value=""> -->
+<!-- 										</form> -->
+<!-- 									</span> -->
+<!-- 								</div> -->
+<!-- 								<div id="progDiv" class="col-xs-1" style="background-color: purple;"></div> -->
+
+<!-- 								<div class="col-xs-4" style="background-color: orange;"> -->
+<!-- 									<button id="voiceSwitch" class="btn btn-default">OFF</button> -->
+<!-- 								</div> -->
+<!-- 								<form style="display: none" id="recordForm" enctype="multipart/form-data" method="post"> -->
+<!-- 									<input type="file" name="recordFile"> -->
+<!-- 								</form> -->
+<!-- 								<div class="col-xs-4" style="background-color: pink;"> -->
+<!-- 									<button id="voiceSwitch" class="btn btn-default">OFF</button> -->
+<!-- 								</div> -->
+								
+								
+							</div>
+							<div id="progDiv" class="row">
+							</div>
+							<div class="row">
+								<button type="button" class="btn btn-warning" id="notifyBtn">알림</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<!-- PWA -->
+<script src="${pageContext.request.contextPath }/js/cropsdoctor/pwa/app.js"></script>
+
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/cropsdoctor/date/date.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	
+	$("#notifyBtn").on("click",function(){
+		displayConfirmNotification();
+	});
+	
+	$(document).on("click","#alarmBtn",function(){
+		// 서비스워커로 직접적인 접근이 불가능
+		var selectDate = $('#datetimepicker2').find('input').val();
+		var parsedDate = Date.parse(selectDate);
+		console.log("Date.parse(selectDate) : " + parsedDate);
+		console.log("설정시간 : " + parsedDate);
+		
+		var compareVal = parsedDate.compareTo(Date.today());
+		console.log(compareVal > 0 ? "미래선택" : "과거선택");
+		if(compareVal < 0){
+			alert("현재 이후로만 가능합니다.");
+			return false;
+		}
+		
+		var alarmDetail = $("input[name=alarmDetail]").val();
+		
+		var reg;
+		
+		navigator.serviceWorker.ready
+			.then(function(swreg) {
+				reg = swreg;
+				return swreg.pushManager.getSubscription();
+			})
+			.then(function(sub) {
+			if (sub === null) {
+				// Create a new subscription
+				var vapidPublicKey = 'BNK2u9_Ngs4bhLBoexOQ4axO1IuY3VDgPIuXKo8p71u4-jVssd1QW-beLLXcMD6JYzU_MmgdFwsB0mHU4riM4Ng';
+				// privateKey : bUbAbXasRKCogKH01-qA54gC410oY7mrQ-GGAFp5zSk
+				var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+				return reg.pushManager.subscribe({
+					userVisibleOnly: true,
+					applicationServerKey: convertedVapidPublicKey
+				});
+			} else {
+		      // We have a subscription
+				console.log('sub != null');
+				return reg.pushManager.getSubscription();
+			}
+		})
+		.then(function(sub){
+			
+			var endPoint = sub.endpoint;
+	    	var key = sub.getKey ? sub.getKey('p256dh') : '';
+	        var auth = sub.getKey ? sub.getKey('auth') : '';
+			
+			console.log("JSON.stringify(sub) : " + JSON.stringify(sub));
+			return fetch('/user/main/datealarm.do', {
+				method : 'POST',
+				headers : {
+				    'Content-Type': 'application/json; charset=utf-8',
+				    'Accept': 'application/json',
+				},
+				body: JSON.stringify({
+					endpoint : endPoint,
+					key : key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : '',
+					auth : auth ? btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : '',
+					selectDate : selectDate,
+					alarmDetail : alarmDetail
+				})
+			})
+		})
+		.then(function(res){
+			console.log("알람설정 완료");
+			insertHtml("응애", selectDate + " 알람설정 완료");
+			send("재질문");
+		})
+		.catch(function(err){
+			console.log(err);
+		});
+		
+	});
+	
+});
+
+</script>
+</html>

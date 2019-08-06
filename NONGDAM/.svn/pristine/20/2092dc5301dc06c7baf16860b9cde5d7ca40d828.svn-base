@@ -1,0 +1,20 @@
+package kr.or.ddit.service.shopping;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import kr.or.ddit.vo.ShoppingFileItemVO;
+import kr.or.ddit.vo.ShoppingVO;
+
+public interface IShoppingService {
+	
+	public ShoppingVO shoppingInfo(Map<String, String> params) throws Exception;
+	public List<ShoppingVO> shoppingList(Map<String, String> params)throws Exception;
+	public String insertShoppingInfo(ShoppingVO shoppingInfo, 
+			MultipartFile[] items)throws Exception;
+
+	public int totalCount(Map<String, String> params) throws Exception;
+	 public List<ShoppingVO> prodIdList(Map<String, String> params) throws Exception;
+}

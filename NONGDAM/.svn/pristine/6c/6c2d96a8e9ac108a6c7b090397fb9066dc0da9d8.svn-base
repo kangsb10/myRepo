@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="customercenter">
+   <typeAlias alias="customerCenterVO" type="kr.or.ddit.vo.CustomerCenterVO"></typeAlias>
+   
+<!--     <resultMap class="cultivationmethodVO" id="cultivationmethodMap"> -->
+<!--       <result property="ctvt_mth_no" column="ctvt_mth_no"/> -->
+<!--       <result property="mber_ncnm" column="mber_ncnm"/> -->
+<!--       <result property="ctvt_mth_sj" column="ctvt_mth_sj"/> -->
+<!--       <result property="ctvt_mth_cn" column="ctvt_mth_cn"/> -->
+<!--       <result property="ctvt_mth_input_de" column="ctvt_mth_input_de"/> -->
+      
+<!--       <result property="items" column="ctvt_mth_no" select="cultivationmethodfileitem.cultivationMethodFileItemList"/> -->
+<!--    </resultMap> -->
+   
+   <sql id="selectAll">
+      SELECT *
+         FROM CUSTOMER_CENTER
+         WHERE CSTMR_CNTER_DELETE = 'n'
+   </sql>
+   
+   <sql id="searchCondition">
+   		<dynamic prepend="AND">
+    			<isNotEmpty property="search_keyword" open="(" close=")">
+    				<isEqual property="search_keycode" compareValue="TOTAL">
+    					 CSTMR_CNTER_SJ LIKE '%'||#search_keyword#||'%' 
+    					    OR MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    					    
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="TITLE">
+    					 CSTMR_CNTER_SJ LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="WRITER">
+    					 MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    			</isNotEmpty>
+    		</dynamic>
+   </sql>
+   
+   <select id="customerCenterInfo" parameterClass="map" resultClass="customerCenterVO">
+      <include refid="selectAll"/>
+         AND CSTMR_CNTER_NO = #cstmr_cnter_no#
+   </select>
+   
+   <select id="upCustomerCenterInfo" parameterClass="map" resultClass="customerCenterVO">
+      <include refid="selectAll"/>
+         AND CSTMR_CNTER_NO = #cstmr_cnter_no#
+   </select>
+   
+   <select id="customerCenterList"  parameterClass="map" resultClass="customerCenterVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    
+	    		<include refid="searchCondition"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+   <insert id="insertCustomerCenter" parameterClass="customerCenterVO">
+      <selectKey keyProperty="cstmr_cnter_no" resultClass="string">
+         SELECT CUSTOMER_CENTER_SEQ.NEXTVAL
+            FROM DUAL
+      </selectKey>
+      
+      INSERT INTO CUSTOMER_CENTER(CSTMR_CNTER_NO
+      								,MBER_ID
+			                        ,MBER_NCNM
+			                        ,CSTMR_CNTER_SJ
+			                        ,CSTMR_CNTER_CN
+			                       	)
+		                     VALUES(#cstmr_cnter_no#
+		                     		,#mber_id#
+			                        ,#mber_ncnm#
+			                        ,#cstmr_cnter_sj#
+			                        ,#cstmr_cnter_cn#
+			                        )
+   </insert>
+   
+   <update id="deleteCustomerCenter" parameterClass="map" >
+   			UPDATE CUSTOMER_CENTER 
+   			SET CSTMR_CNTER_DELETE = 'y'
+   			WHERE CSTMR_CNTER_NO = #cstmr_cnter_no# 
+   </update>
+   
+   <update id="updateCustomerCenter" parameterClass="customerCenterVO">
+   			UPDATE CUSTOMER_CENTER 
+   			SET   MBER_ID = #mber_id#
+   				 ,MBER_NCNM = #mber_ncnm#
+                 ,CSTMR_CNTER_SJ = #cstmr_cnter_sj#
+                 ,CSTMR_CNTER_CN = #cstmr_cnter_cn#
+            WHERE CSTMR_CNTER_NO = #cstmr_cnter_no#
+   </update>
+   
+   <update id="updateHit" parameterClass="map">
+       UPDATE CUSTOMER_CENTER 
+      SET CSTMR_CNTER_HIT = cstmr_cnter_hit + 1
+      WHERE CSTMR_CNTER_NO = #cstmr_cnter_no#
+    </update>
+   
+   <!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(CSTMR_CNTER_NO)
+   			  FROM CUSTOMER_CENTER
+   			  WHERE CSTMR_CNTER_DELETE = 'n'
+   			 <include refid="searchCondition"/> 
+   			  
+   </select>
+   
+   
+   
+   
+<!--    문의내역  -->
+<sql id="selectUser">
+      SELECT *
+         FROM CUSTOMER_CENTER
+         WHERE CSTMR_CNTER_DELETE = 'n'
+         AND MBER_ID = #mber_id#
+   </sql>
+
+<select id="userStatementList"  parameterClass="map" resultClass="customerCenterVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectUser"/> 
+	    
+	    		<include refid="searchCondition"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+<!--    답글 개수 -->
+<select id="countAnswer"  resultClass="int">
+   	    SELECT count(*)
+        FROM CUSTOMER_CENTER
+        WHERE CSTMR_CNTER_ANSWER = '미등록'
+        AND CSTMR_CNTER_DELETE='n'
+        
+   </select>
+</sqlMap>    
+
+
+
+
+
+
+
+

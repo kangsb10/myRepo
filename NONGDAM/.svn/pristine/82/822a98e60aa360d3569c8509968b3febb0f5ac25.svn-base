@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="communityFileItem">
+	<typeAlias alias="communityFileItemVO" type="kr.or.ddit.vo.CommunityFileItemVO"></typeAlias>
+	
+	<statement id="communityFileItemList" resultClass="communityFileItemVO">
+		SELECT * 
+		 FROM COMMUNITY_FILE_ITEM 
+		 WHERE CMMNTY_NO = #cmmnty_no#
+	</statement>
+	
+	<insert id="insertCommunityFileItem" parameterClass="communityFileItemVO">
+		<selectKey keyProperty="cmmnty_file_seq">
+			SELECT COMMNTY_FILE_SEQ.NEXTVAL 
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO COMMUNITY_FILE_ITEM(CMMNTY_FILE_SEQ
+											,CMMNTY_NO
+											,CMMNTY_FILE_NAME
+											,CMMNTY_FILE_SAVE_NAME
+											,CMMNTY_FILE_CONTENT_TYPE
+											,CMMNTY_FILE_SIZE
+											,CMMNTY_FILE_STATUS
+											,CMMNTY_FILE_REG_DATE
+											,CMMNTY_FILE_DOWN_HIT)		
+										 VALUES(#cmmnty_file_seq#
+												,#cmmnty_no#
+												,#cmmnty_file_name#
+												,#cmmnty_file_save_name#
+												,#cmmnty_file_content_type#
+												,#cmmnty_file_size#
+												,#cmmnty_file_status#
+												,#cmmnty_file_reg_date#
+												,#cmmnty_file_down_hit#)
+	</insert>                                    
+	
+	<select id="communityFileItemInfo" parameterClass="map" resultClass="communityFileItemVO">
+			SELECT * 
+			FROM COMMUNITY_FILE_ITEM 
+			WHERE CMMNTY_FILE_SEQ = #cmmnty_file_seq#	
+			<dynamic prepend="AND">
+				<isNotEmpty property="cmmnty_no">
+					CMMNTY_NO = #cmmnty_no#
+				</isNotEmpty>
+			</dynamic>
+	</select>
+</sqlMap>    
+
+
+
+
+
+
+
+
+

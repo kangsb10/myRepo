@@ -1,0 +1,201 @@
+<%@ page language="JAVA" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+    <meta name="description" content="Homes Template">
+    <meta name="keywords" content="Homes, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+<!-- Google web font 
+   ================================================== -->
+<!--   <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,300' rel='stylesheet' type='text/css'> -->
+
+    <link rel="stylesheet" href="/css/view/nice-select.css" type="text/css">
+    <link rel="stylesheet" href="/css/view/owl.carousel.min.css" type="text/css">
+    
+    <link rel="stylesheet" href="/css/view/flaticon.css" type="text/css">
+    <link rel="stylesheet" href="/css/view/jquery-ui.min.css" type="text/css">
+
+<link
+	href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap&subset=korean"
+	rel="stylesheet">
+	
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i"
+    rel="stylesheet">
+	
+<style>
+h1,p,span,a,div,option,input,td,h3,h4 {
+	font-family: 'Do Hyeon', sans-serif;
+	color: #585858;
+}
+
+h1,h3 {
+	font-weight: 400;
+	font-size: 25px;
+	color: #F89152;
+}
+h4 {
+	font-weight: 400;
+	font-size: 20px;
+}
+
+span,a {
+	font-weight: 300;
+	font-size: 17px;
+	color: #F89152;
+}
+
+p {
+	font-weight: 200;
+	font-size: 15px;
+	color: #585858;
+}
+
+option,input {
+	color: #346D4E;
+}
+
+div#a,div#b {
+	font-weight: 200;
+	font-size: 40px;
+	color: #FFFFFF;
+}
+
+th {
+	text-align: center;
+}
+</style>
+</head>
+
+<!-- <form name="updateForm"  role="form" action="" method="post"> -->
+<form name="insertForm"  class="form-horizontal"  method="post" enctype="multipart/form-data" >
+<div id="" style="position: relative; top: 70px;">
+	<div class="">
+		<ul >
+			<li style="position: relative; left: 0px;  font-size: 15px; color: #0B3B24; float: left;">${boardInfo.bbs_creat_sj }게시판 ></li>
+			<li style="position: relative; left: 10px; top: -5px; font-size: 20px; color: #0B3B24; float: left;"> 글쓰기</li>
+		</ul>
+	
+    <section class="property-details">
+        <div class="container">
+            <div class="row sp-40 spt-40">
+                <div class="col-lg-8">
+                    <div class="p-ins">
+	                        <div class="row">
+		                        <ul style="margin-top: 50px;">
+		                        	<li style="float:left; padding-left: -10px;"> <img src="/img/view/view_reg.png" width="25px" height="20px" style=" "></li>
+		                        	<li style="float:left;  padding-left: 10px;"> <label class="" for="bbs_sj" style="">제 목 : </label></li>
+		                       		<li style="float:left; padding-left: 18px;"><label>${cafeListInfo.bbs_sj }</label></li>
+		                        </ul>
+		                    </div>
+                        <div class="row">
+	                        <div style="margin-left:30px; width: 375px; border-top : 1px solid #585858; "></div>
+		                        <ul style="margin-top: 10px;">
+			                       	<li style="float:left; padding-left: -10px;"> <img src="/img/view/view_reg.png" width="25px" height="20px"></li>
+			                       	<li style="float:left;  padding-left: 10px;"> <label class="" for="cafe_mber_ncnm" style="">작성자 : </label></li>
+		                   			<li style="float:left; padding-left: 10px;"><label>${cafeListInfo.cafe_mber_ncnm }</label><li>
+			                    </ul>
+		                    </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div style="margin-left:15px; width: 375px; border-top : 1px solid #585858; "></div>
+                                <div style=" position: relative; top: 5px;">
+                                    <textarea style="background-color:white; width: 380px; height:100%;" rows="8" cols="40" class="ctvt_mth_cn"  id="bbs_cn" name="bbs_cn" placeholder="내용을 입력하세요" readonly>${cafeListInfo.bbs_cn }</textarea>
+                                </div>
+<!--                                 <div style="border-top : 1px solid #585858; "></div> -->
+<!--                                 <div style=" position: relative; top: 5px;"> -->
+<%--                                     <label> 내용 : ${cafeListInfo.bbs_cn }</label> --%>
+<!--                                 </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+	</div>
+   <div class="form-group">
+      <label class="control-label col-sm-2" for="bo_content">첨부파일:</label>
+      <c:if test="${!empty cafeListInfo.items }">
+         <div id="myCarousel" class="carousel slide" data-ride="carousel" style="width:380px; margin-left:40px;">
+            <!-- Indicators -->
+            <ol class="carousel-indicators">
+               <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+               <li data-target="#myCarousel" data-slide-to="1"></li>
+            </ol>
+      
+            <!-- Wrapper for slides -->
+            <div class="carousel-inner" role="listbox" style="height: 200px;">
+            <c:forEach items="${cafeListInfo.items }" var="fileItem" varStatus="stat">
+               <c:if test="${stat.first }">
+                  <div class="item active">
+               </c:if>
+               <c:if test="${stat.last }">
+                  <div class="item">
+               </c:if>
+                  <img src="/files/${fileItem.bbs_file_save_name }" alt="pic1";">
+               </div>
+            
+            </c:forEach>
+            </div>
+            <!-- Left and right controls -->
+            <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+            <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+         </div>
+      </c:if>   
+   </div>
+	<div style="float: left; position: absolute; left: 30px; top: 520px;">
+		<button type="button" id="listbt" style=" color: #fff; background: #0B3B24; border-radius: 20px; padding: 5px 12px 5px 12px; border: 0;" >목록</button>
+	</div>
+<c:if test="${cafeListInfo.cafe_mber_ncnm eq cafeName.cafe_mber_ncnm}">
+	<div style="float: left; position: absolute; left: 80px; top: 520px;">
+		<button type="button" id="updateBtn" style=" color: #fff; background: #E16422; border-radius: 20px; padding: 5px 12px 5px 12px; border: 0;">수정</button>
+	</div>
+	<div style="float: left; position: absolute; left: 130px; top: 520px;">
+		<button type="button" id="delBtn"  style=" color: #fff; background: #E16422; border-radius: 20px; padding: 5px 12px 5px 12px; border: 0;" >삭제</button>
+	</div>
+</c:if>
+</div>
+</form>
+<!-- Javascript 
+================================================== -->
+<script src="/js/main/jquery.js"></script>
+<script src="/js/main/wow.min.js"></script>
+<script src="/js/main/custom.js"></script>
+
+ <script src="/js/view/jquery.nice-select.min.js"></script>
+    <script src="/js/view/owl.carousel.min.js"></script>
+    <script src="/js/view/jquery-ui.min.js"></script>
+    <script src="/js/view/jquery.slicknav.js"></script>
+    <script src="/js/view/main.js"></script>
+<script>
+$(function(){
+	var backUrl = document.referrer;
+	
+	$('#bbs_cn').val('${cafeListInfo.bbs_cn }');
+// 	BootstrapDialog.show({
+// 	    title: '알럿창',
+// 	    message: '알럿창으로 활용하세요!'
+// 	});
+
+	// 목록으로
+	$('#listbt').click(function() {
+		document.referrer ? location.href = backUrl : location.href = "/user/cm/cmaddr/${communityInfo.cmmnty_cafe_adres}/cafeSelList.do?cmmnty_no=${communityInfo.cmmnty_no}&bbs_creat_no=${cafeListInfo.bbs_creat_no }&bbo_no=${cafeListInfo.bbs_no }&cafe_mber_id=${login_mberInfo.mber_id}";
+	});
+	// 수정
+	$('#updateBtn').click(function() {
+		$(location).attr('href', '/user/cm/updateGleForm.do?cmmnty_no=${communityInfo.cmmnty_no}&bbs_no=${cafeListInfo.bbs_no}&bbs_creat_no=${cafeListInfo.bbs_creat_no }&cafe_mber_id=${login_mberInfo.mber_id} ');
+	});
+	// 삭제
+	$('#delBtn').click(function() {
+		$(location).attr('href', '/user/cm/BoardDel.do?cmmnty_cafe_adres=${communityInfo.cmmnty_cafe_adres}&cmmnty_no=${communityInfo.cmmnty_no}&bbs_creat_no=${cafeListInfo.bbs_creat_no }&bbs_no=${cafeListInfo.bbs_no }');
+	});
+	
+	
+});
+</script>
+
+</html>

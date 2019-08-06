@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="buyer">
+   <typeAlias alias="buyerVO" type="kr.or.ddit.vo.BuyerVO"></typeAlias>
+   
+   
+   
+   <sql id="selectAll">
+      	SELECT *
+		FROM BUYER B INNER JOIN LPROD L ON(L.LPROD_GU = B.BUYER_LGU)
+		
+   </sql>
+   
+   
+   
+	<select id="buyerList" resultClass="buyerVO"
+		parameterClass="map">
+		select *
+		from buyer
+		where buyer_nm like '%'||#buyer_nm#||'%'
+
+	</select>
+   
+</sqlMap>    
+
+
+
+
+
+
+
+

@@ -1,0 +1,106 @@
+package kr.or.ddit.cropsdoctor.controller;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.http.HttpResponse;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.lang.JoseException;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
+
+@Controller
+@RequestMapping("/user/main/control")
+public class PWAControlController {
+
+	private static final String publicKey = "BNK2u9_Ngs4bhLBoexOQ4axO1IuY3VDgPIuXKo8p71u4-jVssd1QW-beLLXcMD6JYzU_MmgdFwsB0mHU4riM4Ng";
+	private static final String privateKey = "bUbAbXasRKCogKH01-qA54gC410oY7mrQ-GGAFp5zSk";
+	
+	@RequestMapping("/controlpage")
+	public String controlPage() {
+		return "cropsdoctor/controlPage";
+	}
+	
+	@RequestMapping("/sendmessage")
+	public ModelAndView sendMessage(ModelAndView mv) {
+		
+		boolean result = true;
+		
+		int subListSize = PWAController.subList.size();
+		System.out.println("subListSize : " + subListSize);
+		
+		for(Subscription sub : PWAController.subList) {
+			
+			if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+				Security.addProvider(new BouncyCastleProvider());
+			}
+			
+			PushService pushService = null;
+			try {
+				pushService = new PushService(publicKey, privateKey, "testSubject");
+			} catch (GeneralSecurityException e1) {
+				e1.printStackTrace();
+			}
+			
+			Notification notification = null;
+			try {
+				notification = new Notification(sub, "TesT");
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (NoSuchProviderException e) {
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				e.printStackTrace();
+			}
+			System.out.println(notification.isFcm());
+			
+			HttpResponse resp = null;
+			
+			try {
+				resp = pushService.send(notification);
+			} catch (GeneralSecurityException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JoseException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			int statusCode =  resp.getStatusLine().getStatusCode();
+			String reasonPhrase = resp.getStatusLine().getReasonPhrase();
+			
+			System.out.println("statusCode : " + statusCode);
+			System.out.println("reasonPhrase : " + reasonPhrase);
+			
+			if(statusCode >= 400) {
+				result = false;
+				break;
+			}
+			
+		}
+		
+		mv.addObject("result", result);
+		mv.setViewName("jsonConvertView");
+		return mv;
+	}
+	
+	
+}

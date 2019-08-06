@@ -1,0 +1,20 @@
+{
+  "name": "NONGDAM : country story",
+  "short_name": "농담",
+  "icons": [
+    {
+      "src": "/img/pwa/icons/nongdam_96x96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    }
+  ],
+  "start_url": "/user/main/main_mod.do",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#3ea84b",
+  "theme_color": "#3ea84b",
+  "description": "A simple Instagram Clone, implementing a lot of PWA love.",
+  "dir": "ltr",
+  "lang": "en-US"
+}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<div id="nestable" class="dd">
+		<li data-id="1" class="dd-item"><div class="dd-handle">환영
+				인사</div></li>
+		<li data-id="0" class="dd-item"><div class="dd-handle">기타</div></li>
+		<li data-id="3" class="dd-item"><div class="dd-handle">node_1_1562638198527</div></li>
+		<li data-id="4" class="dd-item"><div class="dd-handle">node_1_1563170425327</div></li>
+		<li data-id="2" class="dd-item"><div class="dd-handle">node_105_1562556090842</div></li>
+		<li data-id="5" class="dd-item"><div class="dd-handle">node_1_1563943622356</div></li>
+		<li data-id="6" class="dd-item"><div class="dd-handle">node_1_1564014407057</div></li>
+		<li data-id="7" class="dd-item"><div class="dd-handle">node_1_1564017144057</div></li>
+		<li data-id="8" class="dd-item"><div class="dd-handle">node_20_1562551638986</div></li>
+		<li data-id="9" class="dd-item"><div class="dd-handle">node_2_1563170480652</div></li>
+		<li data-id="10" class="dd-item"><div class="dd-handle">node_2_1564015118928</div></li>
+		<li data-id="11" class="dd-item"><div class="dd-handle">node_3_1563943303461</div></li>
+		<li data-id="12" class="dd-item"><div class="dd-handle">node_3_1564017460171</div></li>
+		<li data-id="13" class="dd-item"><div class="dd-handle">node_81_1562555090882</div></li>
+		<li data-id="14" class="dd-item"><div class="dd-handle">node_95_1562555214090</div></li>
+	</div>
+
+
+
+	<form action="#">
+		<div class="form-body pal">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="form-group">
+						<div class="input-icon">
+							<i class="fa fa-user"></i> <input id="inputFirstName" type="text"
+								placeholder="First Name" class="form-control">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<div class="input-icon">
+							<i class="fa fa-user"></i> <input id="inputLastName" type="text"
+								placeholder="Last Name" class="form-control">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="form-group">
+						<div class="input-icon">
+							<i class="fa fa-envelope"></i> <input id="inputEmail" type="text"
+								placeholder="E-mail" class="form-control">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<div class="input-icon">
+							<i class="fa fa-phone"></i> <input id="inputPhone" type="text"
+								placeholder="Phone" class="form-control">
+						</div>
+					</div>
+				</div>
+			</div>
+			<hr>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="form-group">
+						<select class="form-control">
+							<option>Country</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="form-group">
+						<input id="inputCity" type="text" placeholder="City"
+							class="form-control">
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="form-group">
+						<input id="inputPostCode" type="text" placeholder="Post code"
+							class="form-control">
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<input id="inputAddress" type="text" placeholder="Address"
+					class="form-control">
+			</div>
+			<div class="form-group">
+				<textarea rows="5" placeholder="Additional info"
+					class="form-control"></textarea>
+			</div>
+			<hr>
+			<div class="form-group">
+				<div class="radio">
+					<label class="radio-inline">
+						<div class="iradio_minimal-grey checked"
+							style="position: relative;">
+							<input id="optionsVisa" type="radio" name="optionsRadios"
+								value="Visa" checked="checked"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+							<ins class="iCheck-helper"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+						</div>&nbsp; Visa
+					</label><label class="radio-inline"><div
+							class="iradio_minimal-grey" style="position: relative;">
+							<input id="optionsMasterCard" type="radio" name="optionsRadios"
+								value="MasterCard"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+							<ins class="iCheck-helper"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+						</div>&nbsp; MasterCard</label><label class="radio-inline"><div
+							class="iradio_minimal-grey" style="position: relative;">
+							<input id="optionsPayPal" type="radio" name="optionsRadios"
+								value="PayPal"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+							<ins class="iCheck-helper"
+								style="position: absolute; top: -20%; left: -20%; display: block; width: 140%; height: 140%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+						</div>&nbsp; PayPal</label>
+				</div>
+			</div>
+			<div class="form-group">
+				<input id="inputNameCard" type="text" placeholder="Name on card"
+					class="form-control">
+			</div>
+			<div class="row">
+				<div class="col-md-9">
+					<div class="form-group">
+						<input id="inputCardNumber" type="text" placeholder="Card number"
+							class="form-control">
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="form-group">
+						<input id="inputCVV2" type="text" placeholder="CVV2"
+							class="form-control">
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="form-group mbn">
+						<label class="pts"> Expiration date</label>
+					</div>
+				</div>
+				<div class="col-md-5">
+					<div class="form-group">
+						<select class="form-control">
+							<option>Month</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="form-group mbn">
+						<input id="inputYear" type="text" placeholder="Year"
+							class="form-control">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-actions text-right pal">
+			<button type="submit" class="btn btn-primary">Continue</button>
+		</div>
+	</form>
+
+
+
+
+	<div class="panel panel-default entityTemp">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#entity5">잡초명</a>
+			</h4>
+		</div>
+		<div id="entity5" class="panel-collapse collapse">
+			<div class="panel-body">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>chk</th>
+							<th class="text-center">Values</th>
+						</tr>
+					</thead>
+					<tbody id="valuesTbody5">
+					</tbody>
+				</table>
+				<button type="button" class="btn btn-warning">수정</button>
+				<button value="잡초명" type="button" class="btn btn-danger entityDeleteBtn">삭제</button>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

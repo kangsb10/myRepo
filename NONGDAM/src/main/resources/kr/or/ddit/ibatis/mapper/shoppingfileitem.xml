@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="shoppingfileitem">
+	<typeAlias alias="shoppingfileitemVO" type="kr.or.ddit.vo.ShoppingFileItemVO"></typeAlias>
+	
+	<statement id="shoppingfileitemList" resultClass="shoppingfileitemVO">
+		SELECT * 
+		 FROM GOODS_FILE_ITEM  
+		 WHERE GOODS_ID = #goods_id#
+		       AND GOODS_FILE_STATUS = 'y'
+	</statement>
+	
+	<insert id="insertShoppingFileItem" parameterClass="shoppingfileitemVO">
+		<selectKey keyProperty="goods_file_seq">
+			SELECT GOODS_FILE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		<!--
+		GOODS_FILE_SEQ
+GOODS_ID
+GOODS_FILE_NAME
+GOODS_FILE_SAVE_NAME
+GOODS_FILE_CONTENT_TYPE
+GOODS_FILE_SIZE
+GOODS_FILE_STATUS
+GOODS_FILE_REG_DATE
+GOODS_FILE_DOWN_HIT  -->
+		INSERT INTO GOODS_FILE_ITEM(GOODS_FILE_SEQ
+									,GOODS_ID
+									,GOODS_FILE_NAME
+									,GOODS_FILE_SAVE_NAME
+									,GOODS_FILE_CONTENT_TYPE
+									,GOODS_FILE_SIZE
+								     )		
+									
+									VALUES( #goods_file_seq#
+											,#goods_id#
+											,#goods_file_name#
+											,#goods_file_save_name#
+											,#goods_file_content_type#
+											,#goods_file_size#
+											 )
+	</insert>
+	
+	<select id="shoppingFileItemInfo" parameterClass="map" resultClass="shoppingfileitemVO">
+			SELECT * FROM GOODS_FILE_ITEM WHERE GOODS_FILE_SEQ = #goods_file_seq#	</select>
+	
+</sqlMap>    
+
+
+
+
+
+
+
+
+

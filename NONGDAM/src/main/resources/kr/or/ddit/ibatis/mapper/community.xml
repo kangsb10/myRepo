@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="community">
+	
+	<typeAlias alias="communityVO" type="kr.or.ddit.vo.CommunityVO"/>
+	
+	<resultMap id="communityMap" class="communityVO">
+		<result property="cmmnty_no" column="cmmnty_no"/>
+		<result property="mber_id" column="mber_id"/>
+		<result property="ctgry_gu" column="ctgry_gu"/>
+		<result property="cmmnty_cafe_nm" column="cmmnty_cafe_nm"/>
+		<result property="cmmnty_estbl_de" column="cmmnty_estbl_de"/>
+		<result property="cmmnty_cafe_adres" column="cmmnty_cafe_adres"/>
+		<result property="cmmnty_cafeinfo" column="cmmnty_cafeinfo"/>
+		<result property="itemss" column="cmmnty_no" select="communityFileItem.communityFileItemList"/>
+	</resultMap>
+	
+	<resultMap id="bulletinMap" class="communityVO">
+		<result property="bbs_no" column="bbs_no"/>
+		<result property="cmmnty_no" column="cmmnty_no"/>
+		<result property="bbs_creat_no" column="bbs_creat_no"/>
+		<result property="cafe_mber_ncnm" column="cafe_mber_ncnm"/>
+		<result property="bbs_sj" column="bbs_sj"/>
+		<result property="bbs_cn" column="bbs_cn"/>
+		<result property="bbs_rdcnt" column="bbs_rdcnt"/>
+		<result property="bbs_input_de" column="bbs_input_de"/>
+		<result property="items" column="bbs_no" select="bulletinBoardFileItem.bulletinBoardFileItemList"/>
+	</resultMap>
+
+<!-- 게시판 글 검색 -->
+	<sql id="searchCondition">
+		<dynamic prepend="AND">
+			<isNotEmpty property="search_keyword" open="(" close=")">
+				<isEqual property="search_keycode" compareValue="TOTAL">
+					BBS_SJ LIKE '%' || #search_keyword# ||'%'
+					OR mber_ncnm LIKE '%'||#search_keyword# ||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="TITLE">
+					BBS_SJ LIKE '%' || #search_keyword# ||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="WRITER">
+					mber_ncnm LIKE '%' || #search_keyword# ||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+<!-- 카페 검색 -->
+	<sql id="searchCondition2">
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_keyword" open="(" close=")">
+				<isEqual property="search_keycode" compareValue="TOTAL">
+					MBER_ID LIKE '%' || #search_keyword# ||'%'
+					OR CMMNTY_CAFE_NM LIKE '%'||#search_keyword# ||'%'
+					OR CTGRY_GU LIKE '%'||#search_keyword# ||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="TITLE">
+					CMMNTY_CAFE_NM LIKE '%' || #search_keyword# ||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="GU">
+					CTGRY_GU LIKE '%' || #search_keyword# ||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="WRITER">
+					MBER_ID LIKE '%' || #search_keyword# ||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM COMMUNITY
+	</sql>
+	
+	<sql id="selectCafeBo">
+		SELECT *
+		  FROM BULLETIN_BOARD_CREATION
+	</sql>
+	
+	<sql id="selectCafeBoList">
+		SELECT *
+		  FROM BULLETIN_BOARD
+	</sql>
+	
+	<sql id="selectfile">
+		SELECT *
+		  FROM COMMUNITY_FILE_ITEM
+	</sql>
+	
+	
+	<select id="communityInfo" parameterClass="map" resultMap="communityMap">
+		<include refid="selectAll"/>
+		 WHERE CMMNTY_NO = #cmmnty_no#
+	</select>
+	
+	
+	<select id="communityList" parameterClass="map" resultMap="communityMap">
+		SELECT B.*
+		  FROM (SELECT ROWNUM rnum, A.*
+				  FROM (<include refid="selectAll"/>
+				  		<include refid="searchCondition2"/>
+						ORDER BY CMMNTY_ESTBL_DE ) A) B
+	     <![CDATA[
+	     	WHERE B.RNUM <= #startCount# 
+	        AND B.RNUM >= #endCount# 
+ 	      ]]> 
+		 ORDER BY RNUM DESC
+	</select>
+	
+	<insert id="communityIns" parameterClass="communityVO">
+		<selectKey keyProperty="cmmnty_no" resultClass="string">
+			SELECT CMMNTY_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO COMMUNITY(
+				CMMNTY_NO
+				,MBER_ID
+				,CTGRY_GU
+				,CMMNTY_CAFE_NM
+				,CMMNTY_ESTBL_DE
+				,CMMNTY_CAFE_ADRES
+				,CMMNTY_CAFEINFO)
+					VALUES(
+				#cmmnty_no#
+				,#mber_id#
+				,#ctgry_gu#
+				,#cmmnty_cafe_nm#
+				,SYSDATE
+				,#cmmnty_cafe_adres#
+				,#cmmnty_cafeinfo#)
+	</insert>
+	
+	<!-- 중분류 -->
+	<select id="guMN" parameterClass="map" resultClass="communityVO">
+		SELECT DISTINCT CTGRY_MN
+		FROM CMMNTY_CTGRY
+	</select>
+	
+	<!-- 소분류 -->
+	<select id="guNM" parameterClass="map" resultClass="communityVO">
+		SELECT CTGRY_NM
+		FROM CMMNTY_CTGRY
+		WHERE CTGRY_MN = #ctgry_mn#
+	</select>
+	
+	<insert id="cafeMberIns" parameterClass="communityVO">
+		INSERT INTO CAFE_MEMBER(
+				 CMMNTY_NO
+				,CAFE_MBER_ID
+				,CAFE_MBER_NCNM)
+					VALUES(
+				#cmmnty_no#
+				,#cafe_mber_id#
+				,#cafe_mber_ncnm#)
+	</insert>
+
+	<!-- 카페 별명 중복검사 -->
+	<select id="cafenameCheck" parameterClass="map" resultClass="communityVO">
+		SELECT *
+		  FROM CAFE_MEMBER
+		 WHERE CMMNTY_NO = #cmmnty_no#
+		 <dynamic prepend="AND">
+		 	<isNotEmpty property="cafe_mber_ncnm">
+		 		CAFE_MBER_NCNM = #cafe_mber_ncnm#
+		 	</isNotEmpty>
+		 	<isNotEmpty property="cafe_mber_id">
+		 		CAFE_MBER_ID = #cafe_mber_id#
+		 	</isNotEmpty>
+		 </dynamic>
+	</select>
+
+	<!-- 카페 게시판 등록 -->
+	<insert id="cafeboardIns" parameterClass="communityVO">
+	<selectKey keyProperty="bbs_creat_no" resultClass="string">
+			SELECT BBS_CREAT_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO BULLETIN_BOARD_CREATION(
+				 BBS_CREAT_NO
+				,CMMNTY_NO
+				,BBS_CREAT_SJ)
+					VALUES(
+				#bbs_creat_no#
+				,#cmmnty_no#
+				,#bbs_creat_sj#)
+	</insert>
+	
+	<select id="cafeBoList" parameterClass="map" resultClass="communityVO">
+		<include refid="selectCafeBo"/>
+			WHERE CMMNTY_NO = #cmmnty_no#
+	</select>
+
+
+	<select id="cafeSelList" parameterClass="map" resultMap="bulletinMap">
+		SELECT B.*
+		  FROM (SELECT ROWNUM RNUM, A.*
+				  FROM (<include refid="selectCafeBoList"/>
+				  			WHERE CMMNTY_NO = #cmmnty_no#
+				  		<include refid="searchCondition" />
+						<dynamic prepend="AND">
+							<isNotEmpty property="bbs_creat_no">
+								BBS_CREAT_NO = #bbs_creat_no#
+							</isNotEmpty>
+						</dynamic>
+						) A) B
+	     <![CDATA[
+	     	WHERE B.RNUM <= #startCount# 
+	        AND B.RNUM >= #endCount# 
+ 	      ]]> 
+		 ORDER BY BBS_INPUT_DE DESC
+	</select>
+
+	<!-- 게시판 글 추가 -->
+	<insert id="cafeBoardInsert" parameterClass="communityVO">
+		<selectKey keyProperty="bbs_no" resultClass="string">
+			SELECT BBS_NO_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO BULLETIN_BOARD(
+				BBS_NO
+				,BBS_CREAT_NO
+				,CMMNTY_NO
+				,CAFE_MBER_NCNM
+				,BBS_SJ
+				,BBS_CN
+				,BBS_INPUT_DE)
+					VALUES(
+				#bbs_no#
+				,#bbs_creat_no#
+				,#cmmnty_no#
+				,#cafe_mber_ncnm#
+				,#bbs_sj#
+				,#bbs_cn#
+				,SYSDATE)
+	</insert>
+
+	<!-- 게시판 이름 매칭 -->
+	<select id="boardInfo" parameterClass="map" resultClass="communityVO">
+		<include refid="selectCafeBo"/>
+			WHERE CMMNTY_NO = #cmmnty_no#
+			AND BBS_CREAT_NO = #bbs_creat_no#
+	</select>
+
+	<!-- 조회수 -->
+	<update id="updateHit" parameterClass="map">
+		UPDATE BULLETIN_BOARD
+		   SET BBS_RDCNT = BBS_RDCNT + 1
+		 WHERE BBS_NO = #bbs_no#
+	</update>
+
+	<!-- 글 뷰 -->
+	<select id="boardListInfo" parameterClass="map" resultMap="bulletinMap">
+		<include refid="selectCafeBoList"/>
+			WHERE BBS_NO = #bbs_no#
+	</select>
+	
+	<!-- 글 삭제 -->
+	<delete id="deleteCafeBoard" parameterClass="map" >
+   			DELETE FROM BULLETIN_BOARD WHERE BBS_NO = #bbs_no#
+	</delete>
+   
+	<!-- 게시판 삭제 -->
+	<delete id="deleteCafebo" parameterClass="map" >
+   			DELETE FROM BULLETIN_BOARD_CREATION WHERE BBS_CREAT_NO = #bbs_creat_no#
+	</delete>
+   
+	<!-- 카페 삭제 -->
+	<delete id="deleteCafe" parameterClass="map" >
+   			DELETE FROM COMMUNITY WHERE CMMNTY_NO = #cmmnty_no#
+	</delete>
+
+	<!-- 게시판 글 수정 -->
+	<update id="updateboardInfo" parameterClass="communityVO">
+		UPDATE BULLETIN_BOARD
+		   SET BBS_SJ = #bbs_sj#
+			   ,BBS_CN = #bbs_cn#
+		 WHERE BBS_NO = #bbs_no#
+	</update>
+	
+	<!-- 카페 수정 -->
+	<update id="updateCafe" parameterClass="communityVO">
+		UPDATE COMMUNITY
+		   SET CTGRY_GU = #ctgry_gu#
+			   ,CMMNTY_CAFE_NM = #cmmnty_cafe_nm#
+		 	   ,CMMNTY_CAFEINFO = #cmmnty_cafeinfo#
+		 WHERE CMMNTY_NO = #cmmnty_no#
+	</update>
+	
+	<!-- 별명 수정 -->
+	<update id="updateNCNM" parameterClass="communityVO">
+		UPDATE CAFE_MEMBER
+		   SET CAFE_MBER_NCNM = #cafe_mber_ncnm#
+		 WHERE CMMNTY_NO = #cmmnty_no#
+		   AND CAFE_MBER_ID = #cafe_mber_id#
+	</update>
+	
+	<!-- 카페 게시판 수정 -->
+	<update id="updateCafebo" parameterClass="communityVO">
+		UPDATE BULLETIN_BOARD_CREATION
+		   SET BBS_CREAT_SJ = #bbs_creat_sj#
+		 WHERE BBS_CREAT_NO = #bbs_creat_no#
+	</update>
+	
+	<!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(BBS_NO)
+   			  FROM BULLETIN_BOARD
+   			 WHERE CMMNTY_NO = #cmmnty_no#
+   			 <include refid="searchCondition"/> 
+   			  
+   </select>
+	<!-- 페이지 쿼리 -->
+   <select id="totalCounts" parameterClass="map" resultClass="int">
+   			SELECT COUNT(CMMNTY_NO)
+   			  FROM COMMUNITY
+   			 <include refid="searchCondition2"/> 
+   </select>
+</sqlMap>    

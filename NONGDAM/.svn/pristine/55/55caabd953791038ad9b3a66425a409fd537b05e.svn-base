@@ -1,0 +1,117 @@
+package kr.or.ddit.service.customercenter;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.or.ddit.dao.customercenter.ICustomerCenterDao;
+import kr.or.ddit.vo.CstmrAnswerVO;
+import kr.or.ddit.vo.CustomerCenterVO;
+
+@Service
+public class ICustomerCenterServiceImpl implements ICustomerCenterService {
+	
+	@Autowired
+	private ICustomerCenterDao dao;
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public CustomerCenterVO customerConterInfo(Map<String, String> params)
+			throws Exception {
+		return dao.customerConterInfo(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public CustomerCenterVO upCustomerConterInfo(Map<String, String> params)
+			throws Exception {
+		return dao.upCustomerConterInfo(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public List<CustomerCenterVO> customerCenterList(Map<String, String> params)
+			throws Exception {
+		return dao.customerCenterList(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public int totalCount(Map<String, String> params) throws Exception {
+		return dao.totalCount(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public String insertCustomerCenter(CustomerCenterVO customerCenterInfo)
+			throws Exception {
+		String cstmr_cnter_no = null;
+		cstmr_cnter_no = dao.insertCustomerCenter(customerCenterInfo);
+		return cstmr_cnter_no;
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public void deleteCustomerCenter(Map<String, String> params)
+			throws Exception {
+		dao.deleteCustomerCenter(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public void updateCustomerCenter(CustomerCenterVO CustomerCenterInfo)
+			throws Exception {
+		dao.updateCustomerCenter(CustomerCenterInfo);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public void updateHit(Map<String, String> params) throws Exception {
+		dao.updateHit(params);
+	}
+	
+//	문의내역
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public List<CustomerCenterVO> userStatementList(Map<String, String> params)
+			throws Exception {
+		return dao.customerCenterList(params);
+	}
+
+	
+//	답글
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public String insertAnswer(CstmrAnswerVO cstmrInfo, CustomerCenterVO customerInfo) throws Exception {
+		String answer_no = null;
+		answer_no = dao.insertAnswer(cstmrInfo, customerInfo);
+		return answer_no;
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, readOnly=true)
+	@Override
+	public CstmrAnswerVO cstmrAnswerInfo(Map<String, String> params)
+			throws Exception {
+		return dao.cstmrAnswerInfo(params);
+	}
+	
+	@Transactional(propagation=Propagation.REQUIRED, rollbackFor={Exception.class})
+	@Override
+	public void updateAnswer(CstmrAnswerVO cstmrInfo) throws Exception {
+		dao.updateAnswer(cstmrInfo);
+	}
+
+	@Override
+	public int countAnswer() throws Exception {
+		return dao.countAnswer();
+	}
+
+	
+
+	
+
+}

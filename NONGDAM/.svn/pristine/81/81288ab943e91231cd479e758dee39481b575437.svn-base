@@ -1,0 +1,212 @@
+
+var deferredPrompt;
+// var notifyBtn = document.querySelectorAll("#notifyBtn");
+
+
+if (!window.Promise) {
+  window.Promise = Promise;
+}
+
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker
+		.register('/sw.js')
+		.then(function () {
+		  console.log('Service worker registered!');
+		})
+		.catch(function(err) {
+		  console.log(err);
+		});
+	
+	registSub();
+}
+
+window.addEventListener('beforeinstallprompt', function(event) {
+  console.log('beforeinstallprompt fired');
+  event.preventDefault();
+  deferredPrompt = event;
+  return false;
+});
+
+function urlBase64ToUint8Array(base64String) {
+	var padding = '='.repeat((4 - base64String.length % 4) % 4);
+	var base64 = (base64String + padding)
+	.replace(/\-/g, '+')
+	.replace(/_/g, '/');
+	
+	var rawData = window.atob(base64);
+	var outputArray = new Uint8Array(rawData.length);
+	
+	for (var i = 0; i < rawData.length; ++i) {
+		outputArray[i] = rawData.charCodeAt(i);
+	}
+	return outputArray;
+}
+
+function displayConfirmNotification() {
+	if ('serviceWorker' in navigator) {
+		var title = "검색이 완료되었습니다.";
+		var options = {
+		body: '검색완료 ㅋㅋㅋ',
+		icon: '/img/pwa/icons/bed-bug_96x96.png',
+		image: '/img/pwa/brown_disease.jpg',
+		dir: 'ltr',	// ltr : left to right
+		lang: 'ko-KR', // BCP 47,
+		vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500],
+		sound : '/sound/pwa/army.mp3',
+		badge: '/img/pwa/icons/bed-bug_96x96.png', 
+		tag: 'confirm-notification',
+		renotify: true,
+		actions: [
+		          { action: 'confirm', title: 'Okay', icon: '/img/pwa/icons/app-icon-96x96.png' },
+		          { action: 'cancel', title: 'Cancel', icon: '/img/pwa/icons/app-icon-96x96.png' }]
+		};
+		navigator.serviceWorker.ready
+			.then(function(swreg) {
+			swreg.showNotification(title, options);
+			});
+		}
+	}
+
+function configurePushSub() {
+  if (!('serviceWorker' in navigator)) {
+	  console.log('serviceWorker is not in navigator');
+    return;
+  }
+  var reg;  // .then에서만 유효한 로컬변수이므로 전역으로 선언후 저장
+  navigator.serviceWorker.ready
+    .then(function(swreg) {
+      reg = swreg;
+      return swreg.pushManager.getSubscription();
+    })
+    .then(function(sub) {
+      if (sub === null) {
+        // Create a new subscription
+        var vapidPublicKey = 'BNK2u9_Ngs4bhLBoexOQ4axO1IuY3VDgPIuXKo8p71u4-jVssd1QW-beLLXcMD6JYzU_MmgdFwsB0mHU4riM4Ng';
+        // privateKey : bUbAbXasRKCogKH01-qA54gC410oY7mrQ-GGAFp5zSk
+        var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey
+        });
+      } else {
+        // We have a subscription
+    	  console.log('sub != null');
+    	  return reg.pushManager.getSubscription();
+      }
+    })
+    .then(function(newSub) {
+    	
+    	var endPoint = newSub.endpoint;
+    	var key = newSub.getKey ? newSub.getKey('p256dh') : '';
+        var auth = newSub.getKey ? newSub.getKey('auth') : '';
+        
+        console.log("btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : " + btoa(String.fromCharCode.apply(null, new Uint8Array(key))));
+        console.log("btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : " + btoa(String.fromCharCode.apply(null, new Uint8Array(auth))));
+        
+    	console.log('newSub received');
+    	console.log("JSON.stringify(newSub) : " + JSON.stringify(newSub));
+      return fetch('/user/main/sub.do', {
+        method : 'POST',
+        headers : {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+			endpoint : endPoint,
+			key : key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : '',
+			auth : auth ? btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : ''
+		})
+      })
+    })
+    .then(function(res) {
+    	console.log("res.ok : " + res.ok);
+    })
+    .catch(function(err) {
+      console.log(err);
+    });
+}
+
+function askForNotificationPermission() {
+  Notification.requestPermission(function(result) {
+    console.log('User Choice', result);
+    if (result !== 'granted') {
+      console.log('No notification permission granted!');
+    } else {
+    	console.log("configurePushSub() 실행");
+    	configurePushSub();
+// displayConfirmNotification();
+    }
+  });
+}
+
+function registSub() {
+  if (!('serviceWorker' in navigator)) {
+	  console.log('serviceWorker is not in navigator');
+    return;
+  }
+  var reg;  // .then에서만 유효한 로컬변수이므로 전역으로 선언후 저장
+  navigator.serviceWorker.ready
+    .then(function(swreg) {
+      reg = swreg;
+      return swreg.pushManager.getSubscription();
+    })
+    .then(function(sub) {
+      if (sub === null) {
+        // Create a new subscription
+        var vapidPublicKey = 'BNK2u9_Ngs4bhLBoexOQ4axO1IuY3VDgPIuXKo8p71u4-jVssd1QW-beLLXcMD6JYzU_MmgdFwsB0mHU4riM4Ng';
+        // privateKey : bUbAbXasRKCogKH01-qA54gC410oY7mrQ-GGAFp5zSk
+        var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey
+        });
+      } else {
+        // We have a subscription
+    	  console.log('sub != null');
+    	  return reg.pushManager.getSubscription();
+      }
+    })
+    .then(function(newSub) {
+    	
+    	var endPoint = newSub.endpoint;
+    	var key = newSub.getKey ? newSub.getKey('p256dh') : '';
+        var auth = newSub.getKey ? newSub.getKey('auth') : '';
+        
+        console.log("btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : " + btoa(String.fromCharCode.apply(null, new Uint8Array(key))));
+        console.log("btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : " + btoa(String.fromCharCode.apply(null, new Uint8Array(auth))));
+        
+    	console.log('newSub received');
+    	console.log("JSON.stringify(newSub) : " + JSON.stringify(newSub));
+      return fetch('/user/main/registSub.do', {
+        method : 'POST',
+        headers : {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+			endpoint : endPoint,
+			key : key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : '',
+			auth : auth ? btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : ''
+		})
+      })
+    })
+    .then(function(res) {
+    	console.log("sub 등록 : " + res.ok);
+    })
+    .catch(function(err) {
+      console.log(err);
+    });
+}
+
+
+// if ('Notification' in window && 'serviceWorker' in navigator) {
+// for (var i = 0; i < enableNotificationsButtons.length; i++) {
+// enableNotificationsButtons[i].style.display = 'inline-block';
+// enableNotificationsButtons[i].addEventListener('click',
+// askForNotificationPermission);
+// }
+// }
+
+// if('Notification' in window && 'serviceWorker' in navigator){
+// notifyBtn[0].addEventListener('click', askForNotificationPermission);
+// }

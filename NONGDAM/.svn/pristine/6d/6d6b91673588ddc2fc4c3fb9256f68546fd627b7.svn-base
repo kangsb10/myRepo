@@ -1,0 +1,788 @@
+function insertHtml(who,myWord) {
+	var img = null;
+	var html = "";
+	
+	if(who == "응애"){
+		img = "/img/spring_logo.png";
+		 html = 
+				"<hr>" + 
+					"<div class='row'>" + 
+						"<div class='col-lg-12'>" + 
+							"<div class='' style=' '>" +
+								"<div style='' >" +
+									"<img class='' src='" + img + "' alt='' style=' float: left; position: relative; left: -10px; width:30px; height:30px; border-radius: 20px;' >" +
+									"<p class='a' style='float: left; position: relative; left: 0px; '>" + who + "</p>" +
+								"</div>" +
+								"<div class='' style='border-radius: 20px; position: relative; left: 20px; top:25px; background-color: #FAFAFA; width:300px; text-align:left; border: 1px solid #A4A4A4; '  >" +
+									"<p align='center' class='b' style='position: relative; left: -20px;'>" + myWord + "</p>" +
+								"</div>" +
+								
+							"</div>" +
+						"</div>" +
+					"</div>";
+	}else{
+		img = "/img/tom.jpg";
+		 html = 
+			 "<hr>" + 
+				"<div class='row'>" + 
+					"<div class='col-lg-12'>" + 
+						"<div class='' style=' '>" +
+							"<div style='' >" +
+								"<img class='' src='" + img + "' alt='' style=' float: right; position: relative; right: -10px; width:30px; height:30px; border-radius: 20px;' >" +
+								"<p class='a' style='float: right; position: relative; right: 0px; '>" + who + "</p>" +
+							"</div>" +
+							"<div class='' style='border-radius: 20px; position: relative; right: -100px; top:25px; background-color: #FAFAFA; width:200px;  border: 1px solid #A4A4A4; '  >" +
+								"<p align='center' class='b' style='position: relative; right: -20px;'>" + myWord + "</p>" +
+							"</div>" +
+							
+						"</div>" +
+					"</div>" +
+				"</div>";
+	}
+				
+
+	$("#chatList").append(html);
+	$('#chatList').scrollTop($('#chatList').prop('scrollHeight'));
+}
+
+function readURL(input){
+	if(input.files && input.files[0]){
+		var reader = new FileReader();
+		reader.onload = function(e){
+			// 이미지 띄우기
+			var imgHtml = "<img src='" + e.target.result + "' width=70%, height=52%>";
+			insertHtml("나",imgHtml);
+		}
+		reader.readAsDataURL(input.files[0]);
+	}
+}
+
+function printDetail(){
+	$("#progDiv").html("<img src='/img/loading.gif' style='width:20px; height:20px;'>");
+	
+	$("#imgForm").ajaxForm({
+        url : "/cropsDoctor/image.do",
+        enctype : "multipart/form-data",
+        dataType : "json",
+        method : "post",
+        success : function(result){
+        	console.log("method : " + result.method);
+        	console.log(result.ncpmsResultMap);
+        	$("#progDiv").html("");
+        	
+         	var resultHtml = "";
+			
+        	// NCPMS
+        	if(result.method == "잡초"){
+        		
+        		resultHtml += weedsPrint(result);
+        		
+        	}else if(result.method == "해충"){
+        		
+        		resultHtml += pestPrint(result);
+        		
+        	}else{
+        		// 병충해
+        		resultHtml += sicknessPrint(result);
+        		
+        	}
+        	resultHtml = pesticidePrint(resultHtml, result);
+        	
+       		insertHtml("응애", resultHtml);
+       		
+        },
+        error : function(){
+            alert("에러");
+        }
+    });
+	$("#imgForm").submit();
+}
+
+function printTime(){
+	var now = new Date();
+	var hours = now.getHours();
+	var minutes = now.getMinutes() + "";
+	
+	var result = (hours > 12 ? hours - 12 : hours) 
+				+ ":" + (minutes.length == 1 ? "0" + minutes : minutes) 
+				+ (hours > 12 ? "PM" : "AM"); 
+	return result;
+}
+
+function send(myWord){
+	
+	$("#chatContent").val('');						// input태그 초기화
+	if(myWord != "인사" && myWord != "재질문"){		// 첫 멘트는 출력하지 않는다. + 재질문도
+		insertHtml("나", myWord);					// 입력값 html 입력
+	}
+	$("#progDiv").html("<img src='/img/loading.gif'" + 
+							" style='width:20px; height:20px;'>");
+	//ajax
+	$.ajax({
+		url : "/cropsDoctor/query.do",
+		data : { myWord : myWord },
+		dataType : 'json',
+		type : "POST",
+		success : function(result){
+			
+			//test
+			console.log("object : " + result.object);
+			console.log("method : " + result.method);
+			console.log("entity : " + result.entity);
+			console.log("purpose : " + result.purpose);
+			console.log("isAlarmed : " + result.isAlarmed);
+			
+			var resp = result.result + "<br/>";
+			
+			$("#progDiv").html("");
+			
+			if(result.object != null){
+				$("input[name=object]").val(result.object);
+			}
+			if(result.method != null){
+				$("input[name=method]").val(result.method);
+			}
+			if(result.entity != null){
+				$("input[name=entity]").val(result.entity);
+			}
+			if(result.purpose != null){
+				$("input[name=purpose]").val(result.purpose);
+			}
+			if(result.isAlarmed != null){
+				$("input[name=isAlarmed]").val(result.isAlarmed);
+			}
+			
+			// 옵션일 경우
+			if(result.optionMapArr != null){
+				var optMap = result.optionMapArr;
+				for(var i = 0; i < optMap.length; i++){
+					var label = optMap[i].label;
+					var text = optMap[i].text;
+					resp += "<a href='javascript:send(" + "\"" + text + "\"" + ")'>" + label + "</a><br/>";
+				}
+			}
+			
+			insertHtml("응애", resp);
+			if(result.purpose == "종료"){
+				setTimeout("self.close()", 3000);
+			}
+			
+			// 알람일 경우
+			if(result.purpose == "알람"){
+				console.log("알람 진입");
+				// 타이머	
+				if(result.method == "타이머"){
+					console.log("타이머 진입");
+					
+				// 시간
+				}else if(result.method == "시간"){
+					console.log("시간 진입");
+					insertHtml("응애", printDatePicker());
+				// 번호등록
+				}else if(result.method == "번호등록"){
+					console.log("번호등록 진입");
+				
+				}else if(result.method == "알람취소"){
+					console.log("알람취소 진입");
+				}
+				
+				
+			}
+			
+			// 검색일 경우
+			if(result.searchList != null){
+				// 병명
+				var searchList = result.searchList;
+				var htmls = "";
+				for(var i = 0; i < searchList.length; i++){
+					htmls += "<div>";
+					htmls += "<a href='#'><img src='" + searchList[i].thumbImg + "'/></a><br/>";
+					htmls += "<a href='#'>" + searchList[i].sickNameKor + "</a><br/>";
+					htmls += "cropName : " + searchList[i].cropName;
+					htmls += "</div><br/><br/>";
+				}
+				insertHtml("응애", htmls);
+				send("재질문");
+			}
+			if(result.searchMap != null){
+				// 해충, 잡초, 농약
+				var searchHtml = "";
+				if(result.method == "농약"){
+					searchHtml = searchpesticidePrint(result);
+				}
+				if(result.method == "해충"){
+					searchHtml = pestPrint(result);
+				}
+				if(result.method == "잡초"){
+					searchHtml = weedsPrint(result);
+				}
+				insertHtml("응애", searchHtml);
+				send("재질문");
+				
+			}
+			
+			if(result.purpose == "위치"){
+				// GPS켜기
+				if(myWord != "재질문"){
+					navigator.geolocation.getCurrentPosition(successCallback, successCallback);
+				}
+			}
+			
+			if(result.purpose == "검사" && (result.object != null || result.method == "잡초")){
+				visibleImgForm();
+			}
+			
+			return false;
+		},
+		error : function(result){
+			alert(result.status + " | " + result.responseText);
+		},
+	})
+}
+
+function weedsPrint(result){
+	
+	var weedsKorName 	  = null;	// 국문명   
+	var weedsFamily 	  = null;   // 잡초 과명 
+	var weedsKorOtherName = null;   // 국문명 이명
+	var weedsLifeForm 	  = null;   // 생활형   
+	var weedsHabitat 	  = null;   // 서식지   
+	var weedsShape 		  = null;   // 형태    
+	var weedsEcology 	  = null;   // 생태    
+	var imageListStr 	  = null;   // 이미지 주소
+	
+	if(result.searchMap != null){
+		weedsKorName 	  = result.searchMap.weedsKorName;
+		weedsFamily 	  = result.searchMap.weedsFamily; 
+		weedsKorOtherName = result.searchMap.weedsKorOtherName;
+		weedsLifeForm 	  = result.searchMap.weedsLifeForm;
+		weedsHabitat 	  = result.searchMap.weedsHabitat;
+		weedsShape 		  = result.searchMap.weedsShape;
+		weedsEcology 	  = result.searchMap.weedsEcology;
+		imageListStr 	  = result.searchMap.imageListStr;
+	}else{
+		weedsKorName 	  = result.ncpmsResultMap.weedsKorName;     
+		weedsFamily 	  = result.ncpmsResultMap.weedsFamily;      
+		weedsKorOtherName = result.ncpmsResultMap.weedsKorOtherName;
+		weedsLifeForm 	  = result.ncpmsResultMap.weedsLifeForm;    
+		weedsHabitat 	  = result.ncpmsResultMap.weedsHabitat;     
+		weedsShape 		  = result.ncpmsResultMap.weedsShape;       
+		weedsEcology 	  = result.ncpmsResultMap.weedsEcology;     
+		imageListStr 	  = result.ncpmsResultMap.imageListStr;     
+	}
+	// 잡초국문명,.잡초과명, 서식지, 생태
+	
+	var diseaseHtml = "<br/>";
+	
+	diseaseHtml += wrappingDiv("잡초 국문명 : " + weedsKorName + "<br/>");
+	
+	if(weedsFamily != null && weedsFamily != ""){
+		var temp  = "잡초 과명 : " + weedsFamily + "<br/>";
+		diseaseHtml += temp;
+	}
+	if(weedsHabitat != null && weedsHabitat != ""){
+		var temp = "서식지 : " + weedsHabitat + "<br/>";
+		diseaseHtml += temp;
+	}
+	if(weedsEcology != null && weedsEcology != ""){
+		var temp = "생태 : " + weedsEcology + "<br/>";
+		diseaseHtml += temp;
+	}
+	
+	//collapse
+	var collapsedDesc = "";
+	
+	if(weedsKorOtherName != null && weedsKorOtherName != ""){
+		collapsedDesc += wrappingDiv("국문명 이명 : " + weedsKorOtherName + "<br/>"); 
+	}
+	if(weedsLifeForm != null && weedsLifeForm != ""){
+		collapsedDesc += wrappingDiv("생활형 : " + weedsLifeForm + "<br/>"); 
+	}
+	if(weedsShape != null && weedsShape != ""){
+		collapsedDesc += wrappingDiv("형태 : " + weedsShape + "<br/>"); 
+	}
+	
+	if(imageListStr != null && imageListStr != ""){
+		var imgArr = imageListStr.split(",");
+//		for(var i = 0; i < imgArr.length; i++){
+		for(var i = 0; i < 3; i++){				// 이미지가 너무 많아 3개로 제한
+			diseaseHtml += "<img src='" + imgArr[i] + "' style='width:30%; height:30%;'/><br/><br/>";
+		}
+	}
+	
+	diseaseHtml += collapsed(collapsedDesc);
+	
+	return diseaseHtml;
+}
+
+function pestPrint(result){
+	
+	var insectSpeciesKor = null;
+	var ecologyInfo		 = null;
+	var damageInfo		 = null;
+	var stleInfo		 = null;
+	var preventMethod	 = null;
+	var imageListStr	 = null;
+	
+	console.log("pestPrint result : " + result);
+	if(result.searchMap != null){
+		insectSpeciesKor = result.searchMap.insectSpeciesKor;
+		ecologyInfo		 = result.searchMap.ecologyInfo;
+		damageInfo		 = result.searchMap.damageInfo;
+		stleInfo		 = result.searchMap.stleInfo;
+		preventMethod	 = result.searchMap.preventMethod;
+		imageListStr	 = result.searchMap.imageListStr;
+	}else{
+		insectSpeciesKor = result.ncpmsResultMap.insectSpeciesKor;
+		ecologyInfo		 = result.ncpmsResultMap.ecologyInfo;
+		damageInfo		 = result.ncpmsResultMap.damageInfo;
+		stleInfo		 = result.ncpmsResultMap.stleInfo;
+		preventMethod	 = result.ncpmsResultMap.preventMethod;
+		imageListStr	 = result.ncpmsResultMap.imageListStr;
+	}
+	
+	
+	
+	var diseaseHtml = "<br/>";
+	
+	if(insectSpeciesKor != null && insectSpeciesKor != ""){
+		var temp = "해충명 : " + insectSpeciesKor + "<br/>";
+		diseaseHtml +=  wrappingDiv(temp);
+	}
+	if(preventMethod != null && preventMethod != ""){
+		var temp = "방제방법 : " + preventMethod + "<br/>";
+		diseaseHtml +=  wrappingDiv(temp);
+	}
+	
+	//collapse
+	var collapsedDesc = "";
+	if(ecologyInfo != null && ecologyInfo != ""){
+		var temp = "생태정보 : " + ecologyInfo + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	if(damageInfo != null && damageInfo != ""){
+		var temp = "피해정보 : " + damageInfo + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	if(stleInfo != null && stleInfo != ""){
+		var temp = "형태정보 : " + stleInfo + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	
+	if(imageListStr != null && imageListStr != ""){
+		var imgArr = imageListStr.split(",");
+//		for(var i = 0; i < imgArr.length; i++){
+		for(var i = 0; i < 3; i++){				// 이미지가 너무 많아 3개만 출력
+			diseaseHtml += "<img src='" + imgArr[i] + "' style='width:30%; height:30%;'/><br/><br/>";
+		}
+	}
+	
+	diseaseHtml += collapsed(collapsedDesc);
+	
+	return diseaseHtml;
+
+}
+
+// 병충해
+function sicknessPrint(result){
+	
+	var cropName 	= result.ncpmsResultMap.cropName;
+	var sickNameKor = result.ncpmsResultMap.sickNameKor;
+	var infRoute 	= result.ncpmsResultMap.infectionRoute;
+	var devCon 		= result.ncpmsResultMap.developmentCondition;
+	var symptoms 	= result.ncpmsResultMap.symptoms;
+	var prevMethod 	= result.ncpmsResultMap.preventionMethod;
+	var etc 		= result.ncpmsResultMap.etc;
+	
+//	var diseaseHtml = "<br/>" + wrappingDiv("작물이름 : " + cropName + "<br/>");
+	var diseaseHtml = "<br/>";
+	
+	
+	if(sickNameKor != null && sickNameKor != ""){
+		var temp = "병명 : " + sickNameKor	+ "<br/>";
+		diseaseHtml += wrappingDiv(temp);
+	}
+	if(prevMethod != null && prevMethod != ""){
+		var temp = "방제방법 : " + "</br>" + prevMethod + "<br/>";
+		diseaseHtml += wrappingDiv(temp);
+	}
+	// collapse
+	var collapsedDesc = "";
+	if(infRoute != null && infRoute != ""){
+		var temp = "전염경로 : " + infRoute + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	if(devCon != null && devCon != ""){
+		var temp = "발생환경 : " + devCon + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	if(symptoms != null && symptoms != ""){
+		var temp = "병증상 : " + symptoms + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	if(etc != null && etc != ""){
+		var temp = "기타 : " + etc + "<br/>";
+		collapsedDesc += wrappingDiv(temp);
+	}
+	
+	diseaseHtml += collapsed(collapsedDesc);
+	
+	return diseaseHtml;
+	
+}
+
+function pesticidePrint(diseaseHtml, result){
+	
+	diseaseHtml += "<br/><br/>";
+	
+	// 농약
+	var cropNames 		 = result.nongyakResultMap.cropNames; 
+	var diseaseWeedNames = result.nongyakResultMap.diseaseWeedNames;
+	var useNames 		 = result.nongyakResultMap.useNames;
+	var pestiKorNames 	 = result.nongyakResultMap.pestiKorNames;
+	var pestiBrandNames  = result.nongyakResultMap.pestiBrandNames;
+	var compNames 		 = result.nongyakResultMap.compNames;
+	var pestiCodes 		 = result.nongyakResultMap.pestiCodes;
+	var diseaseUseSeqs 	 = result.nongyakResultMap.diseaseUseSeqs;
+	var goodsId			 = result.nongyakResultMap.goodsId;
+	
+	// 농약 사용정보
+	var pestiUse 		= result.nongyakUsageMap.pestiUse;
+	var useSuittime 	= result.nongyakUsageMap.useSuittime;
+	var useNum  		= result.nongyakUsageMap.useNum;
+	
+	if(pestiBrandNames != null && pestiBrandNames != ""){
+		diseaseHtml += "상표명 : " + pestiBrandNames + "<br/>";
+	}        	
+	if(pestiKorNames != null && pestiKorNames != ""){
+		diseaseHtml += "품목 : " + pestiKorNames + "<br/>";
+	}        	
+	if(useNames != null && useNames != ""){
+		diseaseHtml += "용도 : " + useNames + "<br/>";
+	}        	
+	if(compNames != null && compNames != ""){
+		diseaseHtml += "회사명 : " + compNames + "<br/>";
+	}        	
+	if(pestiUse != null && pestiUse != ""){
+		diseaseHtml += "사용적기 : " + pestiUse	+ "<br/>";
+	}
+	if(useSuittime != null && useSuittime != ""){
+		diseaseHtml += "안전사용기준(수확~일전) : " + useSuittime	+ "<br/>";
+	}
+	if(useNum != null && useNum != ""){
+		diseaseHtml += "안전사용기준(~회 이내) : " + useNum	+ "<br/>";
+	}
+	if(goodsId != null && goodsId != ""){
+		diseaseHtml += pesticideBtn(goodsId);
+	}
+	return diseaseHtml;
+}
+
+function searchpesticidePrint(result){
+	
+	var diseaseHtml = "";
+	
+	// 농약
+	var cropNames 		 = result.searchMap.cropNames; 
+	var diseaseWeedNames = result.searchMap.diseaseWeedNames;
+	var useNames 		 = result.searchMap.useNames;
+	var pestiKorNames 	 = result.searchMap.pestiKorNames;
+	var pestiBrandNames  = result.searchMap.pestiBrandNames;
+	var compNames 		 = result.searchMap.compNames;
+	var pestiCodes 		 = result.searchMap.pestiCodes;
+	var diseaseUseSeqs 	 = result.searchMap.diseaseUseSeqs;
+	
+	// 농약 사용정보
+	var pestiUse 		= result.searchMap.pestiUse;
+	var useSuittime 	= result.searchMap.useSuittime;
+	var useNum  		= result.searchMap.useNum;
+	
+	if(pestiBrandNames != null && pestiBrandNames != ""){
+		diseaseHtml += "상표명 : " + pestiBrandNames + "<br/>";
+	}        	
+	if(pestiKorNames != null && pestiKorNames != ""){
+		diseaseHtml += "품목 : " + pestiKorNames + "<br/>";
+	}        	
+	if(useNames != null && useNames != ""){
+		diseaseHtml += "용도 : " + useNames + "<br/>";
+	}        	
+	if(compNames != null && compNames != ""){
+		diseaseHtml += "회사명 : " + compNames + "<br/>";
+	}        	
+	if(pestiUse != null && pestiUse != ""){
+		diseaseHtml += "사용적기 : " + pestiUse	+ "<br/>";
+	}
+	if(useSuittime != null && useSuittime != ""){
+		diseaseHtml += "안전사용기준(수확~일전) : " + useSuittime	+ "<br/>";
+	}
+	if(useNum != null && useNum != ""){
+		diseaseHtml += "안전사용기준(~회 이내) : " + useNum	+ "<br/>";
+	}
+	
+	return diseaseHtml;
+}
+
+function successCallback(position){
+	var pos = {
+			lat : position.coords.latitude,
+			lng : position.coords.longitude
+	};
+	
+	// ajax로 현재 위치를 파라미터로 넘기고
+	// 네이버 지도 api 위치검색을 통하여 현위치를 중심으로
+	// 주변 '농약사' 위치 마킹된 지도를 출력
+	
+	var latLong = pos.lng + "," + pos.lat;
+	
+	console.log("latitude : " + pos.lat);
+	console.log("longitude : " + pos.lng);
+	
+	$.ajax({
+		url : "/naver/maps.do",
+		data : { latLong : latLong },
+		dataType : 'json',
+		type : "POST",
+		success : function(result){
+			
+			var nysLocation = JSON.parse(result.NYSlocation);
+//			console.log("jsonStr : " + result.NYSlocation);
+//			console.log("jsonObj : " + test);
+//			console.log("test.status : " + test.status);	// OK 출력됨
+//			console.log("test.places[0].name : " + test.places[0].name);
+//			console.log("test.places[1].road_address : " + test.places[1].road_address);
+//			console.log("test.places[2].x : " + test.places[2].x);
+//			console.log("test.places[3].phone_number : " + test.places[3].phone_number);
+			
+			var mapHtml = "<div id='map' style='width:100%;height:400px;'></div>";
+			insertHtml("응애", mapHtml);
+			
+			//지도 출력
+			var mapOptions = {
+					center : new naver.maps.LatLng(pos.lat,pos.lng),
+					zoom : 10
+			};
+			var map = new naver.maps.Map('map', mapOptions);
+			
+			// 현재 위치
+			var myMarkerOption = {
+					position : new naver.maps.LatLng(pos.lat,pos.lng),
+					map : map
+				}
+			var myMarker = new naver.maps.Marker(myMarkerOption);
+			
+			// long : 127.~~ 	x값
+			// lat : 37.~~		y값
+			
+			// 농약사 위치 
+			var markers = [];
+			var infoWindows = [];
+			for(var i = 0; i < nysLocation.places.length; i++){
+				
+				var nys = nysLocation.places[i];
+				var position = new naver.maps.LatLng(nys.y,nys.x);
+				var contentString =
+					"<div class='iw_inner'>" + 
+						"<h3>" + nys.name + "</h3>" + 
+						"<p>" + nys.road_address + "<br>" + nys.jibun_address + "<br>" + 
+						"<a href='tel:" + nys.phone_number + "'>" + nys.phone_number + "</a><br>" + 
+						"</p>" + 
+					"</div>";
+				
+				
+				var nysMarker = new naver.maps.Marker({
+					map : map,
+					position : position
+//					title : nys.name
+//					zIndex : 100
+				});
+				
+				var nysInfoWindow = new naver.maps.InfoWindow({
+					content : contentString
+//					maxWidth : 100
+				});
+				
+				markers.push(nysMarker);
+				infoWindows.push(nysInfoWindow);
+
+				//updateMarkers
+				naver.maps.Event.addListener(map, 'idle', function(){
+					var mapBounds = map.getBounds();
+					if(mapBounds.hasLatLng(nysMarker.getPosition())){
+						showMarker(map, nysMarker);
+					}else{
+						hideMarker(map, nysMarker);
+					}
+				});
+				
+				// add Event
+				naver.maps.Event.addListener(nysMarker, 'click', function(){
+					var marker = nysMarker,
+					    infoWindow = nysInfoWindow;
+					if(infoWindow.getMap()){
+						infoWindow.close();
+					}else{
+						infoWindow.open(map, marker);
+					}
+				});
+				
+			}
+			
+			// 'idle' : 이벤트 이름
+//			naver.maps.Event.addListener(map, 'idle', function(){
+//				updateMarkers(map, markers);
+//			});
+			
+//			// marker에 이벤트 추가하기
+//			for (var i=0, ii=markers.length; i<ii; i++) {
+//				console.log("markers[" + i + "] : " + markers[i]);
+//				console.log("infoWindows[" + i + "] : " + infoWindows[i]);
+//			    naver.maps.Event.addListener(markers[i], 'click', function(i){
+//		    		if(infoWindows[i].getMap()){
+//		    			infoWindows[i].close();
+//		    		}else{
+//		    			infoWindows[i].open(map, markers[i]);
+//		    		}
+//			    });
+//			    console.log("이벤트 적용여부 : " + naver.maps.Event.hasListener(markers[i], 'click'));
+//			}
+			
+		},	// success end
+		error : function(result){
+			alert(result.status + " | " + result.responseText);
+		}
+	});
+	
+	send("재질문");
+	
+}
+
+function errorCallback(error){
+	var resp = "위치를 확인할 수 없습니다.";
+	insertHtml("응애", resp);
+	send("재질문");
+}
+
+function showMarker(map, marker) {
+
+    if (marker.setMap()) return;
+    marker.setMap(map);
+}
+
+function hideMarker(map, marker) {
+
+    if (!marker.setMap()) return;
+    marker.setMap(null);
+}
+
+function getClickHandler(markers, infoWindows, seq) {
+	return function(e) {
+        var marker = markers[seq],
+            infoWindow = infoWindows[seq];
+
+        if (infoWindow.getMap()) {
+            infoWindow.close();
+        } else {
+            infoWindow.open(map, marker);
+        }
+    }
+}
+
+function updateMarkers(map, markers) {
+
+    var mapBounds = map.getBounds();
+    var marker, position;
+
+    for (var i = 0; i < markers.length; i++) {
+
+        marker = markers[i]
+        position = marker.getPosition();
+
+        if (mapBounds.hasLatLng(position)) {
+            showMarker(map, marker);
+        } else {
+            hideMarker(map, marker);
+        }
+    }
+}
+
+function printDatePicker(){
+	var html = 
+		
+		"<div class='container'>" + 
+		    "<div class='row'>" + 
+		        "<div class='col-sm-6'>" + 
+		            "<div class='form-group'>" + 
+		                "<div class='input-group date' id='datetimepicker2'>" + 
+		                    "<input type='text' class='form-control' />" + 
+		                    "<span class='input-group-addon'>" + 
+		                        "<span class='glyphicon glyphicon-calendar'></span>" + 
+		                    "</span>" + 
+		                "</div>" + 
+		                "</br>에 알람이 실행됩니다." +
+		                "</br>알람내용 : " + 
+		                "</br>" + 
+		                "<input type='text' name='alarmDetail'>" + 
+		                "</br>" + 
+		                "<div class='row'>" +
+		                	"<button class='btn btn-info pull-right' id='alarmBtn' type='button'>설정</button>" +
+		                "</div>" + 
+		            "</div>" + 
+		        "</div>" + 
+		        "<script type='text/javascript'>" + 
+		            "$(function () {" + 
+		                "$('#datetimepicker2').datetimepicker({" + 
+		                    "locale: 'ko'" + 
+		                "});" +
+//		                "$('#alarmBtn').on('click',function(){" +
+//		                	"$('#hiddenBtn').val(" + $('#datetimepicker2').find('input').val() + ")" +
+//		                	"$('#hiddenBtn').trigger('click');" + 
+//		                	"alert(" + "$('#datetimepicker2').find('input').val()" + ");" +
+//		                	"alert(" + "typeof($('#datetimepicker2').find('input').val())" + ");" + 
+//		                "});" + 
+		            "});" + 
+		        "</script>" + 
+		    "</div>" + 
+		"</div>";
+		
+	return html;
+		
+}
+
+function visibleImgForm(){
+	$("#imgSpan").attr("style", "visibility:visible;");
+}
+
+function hiddenImgForm(){
+	$("#imgSpan").attr("style", "visibility:hidden;");
+}
+
+function wrappingDiv(text){
+	var result = "<div class='row' align='left'>" + text + "</div>";
+	return result;
+}
+
+function collapsed(text){
+	var button = 
+		"<button type='button' class='btn btn-info' " +
+			"data-toggle='collapse' data-target='#demo'>더보기</button>";
+	
+	var descDiv = "<div id='demo' class='collapse'>" + text + "</div>";
+	
+	return button + descDiv;
+}
+
+function pesticideBtn(goodsId){
+	var btn = 
+		"<button id='" + goodsId + "' type='button' class='btn btn-success'>사러가기</button>";
+	
+	var jqueryFnc = 
+		"<script type='text/javascript'>" + 
+        "$(function () {" +
+        	"$('#" + goodsId + "').on('click',function(){" +
+    			"$(location).attr('href', 'https://www.naver.com').attr('target','_blank');" + 
+        	"});" + 
+        "});" + 
+    "</script>"; 
+	
+	return "<br/>" + btn + jqueryFnc;
+}

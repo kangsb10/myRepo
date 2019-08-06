@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="nongupinFileItem">
+	<typeAlias alias="nongupinFileItemVO" type="kr.or.ddit.vo.NongupinFileItemVO"></typeAlias>
+	
+	<statement id="nongupinFileItemList" resultClass="nongupinFileItemVO">
+		SELECT * 
+		 FROM FARMING_IN_FILE_ITEM 
+		 WHERE FARMING_IN_NO = #farming_in_no#
+	</statement>
+	
+	<insert id="insertNongupinFileItem" parameterClass="nongupinFileItemVO">
+		<selectKey keyProperty="farming_in_file_seq">
+			SELECT FARMING_IN_FILE_SEQ.NEXTVAL 
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO FARMING_IN_FILE_ITEM(FARMING_IN_FILE_SEQ
+										,FARMING_IN_NO
+										,FARMING_IN_FILE_NAME
+										,FARMING_IN_FILE_SAVE_NAME
+										,FARMING_IN_FILE_CONTENT_TYPE
+										,FARMING_IN_FILE_SIZE
+										,FARMING_IN_FILE_STATUS
+										,FARMING_IN_FILE_REG_DATE
+										,FARMING_IN_FILE_DOWN_HIT)		
+								VALUES(#farming_in_file_seq#
+										,#farming_in_no#
+										,#farming_in_file_name#
+										,#farming_in_file_save_name#
+										,#farming_in_file_content_type#
+										,#farming_in_file_size#
+										,#farming_in_file_status#
+										,#farming_in_file_reg_date#
+										,#farming_in_file_down_hit#)
+	</insert>                                    
+	
+	<select id="nongupinFileItemInfo" parameterClass="map" resultClass="nongupinFileItemVO">
+			SELECT * 
+			FROM FARMING_IN_FILE_ITEM 
+			WHERE FARMING_IN_FILE_SEQ = #farming_in_file_seq#	
+			<dynamic prepend="AND">
+				<isNotEmpty property="farming_in_no">
+					FARMING_IN_NO = #farming_in_no#
+				</isNotEmpty>
+			</dynamic>
+	</select>
+</sqlMap>    
+
+
+
+
+
+
+
+
+

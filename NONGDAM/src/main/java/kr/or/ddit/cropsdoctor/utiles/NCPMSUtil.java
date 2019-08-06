@@ -1,0 +1,546 @@
+package kr.or.ddit.cropsdoctor.utiles;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
+public class NCPMSUtil {
+	
+	/**
+	 * 병 검색
+	 * @author 강새벽
+	 * @param diseaseCode
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, String> detailDisease(String diseaseCode) throws IOException {
+
+		// http://ncpms.rda.go.kr/npmsAPI/service?apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC05
+		// &sickKey=D00000888
+
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+
+		Map<String, String> resultMap = new HashMap<String, String>();
+		
+		String apiKey 		= "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	= "SVC05";
+		String sickKey 		= diseaseCode;
+
+		//XML 받을 URL 생성
+		String parameter = "apiKey="+ apiKey;
+		parameter += "&serviceCode="+ serviceCode;
+		parameter += "&sickKey="+ sickKey;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		
+		String cropName 				= null;
+		String sickNameChn 				= null;
+		String sickNameEng 				= null;
+		String sickNameKor 				= null;
+		String infectionRoute 			= null;
+		String developmentCondition 	= null;
+		String symptoms 				= null;
+		String preventionMethod 		= null;
+		String etc 						= null;
+		
+		try{cropName = doc.getElementsByTagName("cropName").item(0).getFirstChild().getNodeValue();}catch(Exception e){cropName = "";}//작물명
+		try{sickNameChn = doc.getElementsByTagName("sickNameChn").item(0).getFirstChild().getNodeValue();}catch(Exception e){sickNameChn = "";}//병 한문명
+		try{sickNameEng = doc.getElementsByTagName("sickNameEng").item(0).getFirstChild().getNodeValue();}catch(Exception e){sickNameEng = "";}//병 영문명
+		try{sickNameKor = doc.getElementsByTagName("sickNameKor").item(0).getFirstChild().getNodeValue();}catch(Exception e){sickNameKor = "";}//병 한글명
+		try{infectionRoute = doc.getElementsByTagName("infectionRoute").item(0).getFirstChild().getNodeValue();}catch(Exception e){infectionRoute = "";}//전염경로
+		try{developmentCondition = doc.getElementsByTagName("developmentCondition").item(0).getFirstChild().getNodeValue();}catch(Exception e){developmentCondition = "";}//발생환경
+		try{symptoms = doc.getElementsByTagName("symptoms").item(0).getFirstChild().getNodeValue();}catch(Exception e){symptoms = "";}//병 증상
+		try{preventionMethod = doc.getElementsByTagName("preventionMethod").item(0).getFirstChild().getNodeValue();}catch(Exception e){preventionMethod = "";}//방제방법
+		try{etc = doc.getElementsByTagName("etc").item(0).getFirstChild().getNodeValue();}catch(Exception e){etc = "";}//기타설명
+		
+		resultMap.put("cropName"			,cropName);
+		resultMap.put("sickNameChn"			,sickNameChn);
+		resultMap.put("sickNameEng"			,sickNameEng);
+		resultMap.put("sickNameKor"			,sickNameKor);
+		resultMap.put("infectionRoute"		,infectionRoute);
+		resultMap.put("developmentCondition",developmentCondition);
+		resultMap.put("symptoms"			,symptoms);
+		resultMap.put("preventionMethod"	,preventionMethod);
+		resultMap.put("etc"					,etc);
+
+		return resultMap;
+	}
+	
+	
+	/**
+	 * 병명 검색 시 리스트 출력
+	 * @author 강새벽
+	 * @param diseaseNm
+	 * @return
+	 * @throws IOException
+	 */
+	public List<Map<String,String>> diseaseList(String diseaseNm) throws IOException {
+		
+		// http://ncpms.rda.go.kr/npmsAPI/service?
+		// displayCount=50
+		// &apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC01
+		// &sickNameKor=갈색무늬병
+		
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+		
+		List<Map<String,String>> resultList = new ArrayList<Map<String,String>>();
+		
+		String apiKey 		= "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	= "SVC01";
+		String diseaseName  = diseaseNm;
+		
+		//XML 받을 URL 생성
+		String parameter = "apiKey=" + apiKey;
+		parameter += "&serviceCode=" + serviceCode;
+		parameter += "&sickNameKor=" + diseaseName;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?displayCount=50&"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		try{
+			NodeList list = doc.getElementsByTagName("list");
+			NodeList items = list.item(0).getChildNodes();
+			for(int i = 0; i < items.getLength(); i++){
+				Map<String,String> temp = new HashMap<String, String>();
+				String thumbImg 	= items.item(i).getChildNodes().item(1).getFirstChild().getNodeValue();
+				String sickKey 		= items.item(i).getChildNodes().item(2).getFirstChild().getNodeValue();
+				String cropName 	= items.item(i).getChildNodes().item(3).getFirstChild().getNodeValue();
+				String sickNameKor 	= items.item(i).getChildNodes().item(5).getFirstChild().getNodeValue();
+				temp.put("thumbImg", 	thumbImg);
+				temp.put("sickKey", 	sickKey);
+				temp.put("cropName", 	cropName);
+				temp.put("sickNameKor", sickNameKor);
+				
+				resultList.add(temp);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return resultList;
+	}
+	
+	
+	/**
+	 * 잡초 검색
+	 * @author 강새벽
+	 * @param diseaseCode
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, String> detailWeeds(String diseaseCode) throws IOException {
+
+		// http://ncpms.rda.go.kr/npmsAPI/service?
+		// apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC10
+		// &weedsKey=W00000012
+
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+
+		Map<String, String> resultMap = new HashMap<String, String>();
+		
+		String apiKey 		= "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	= "SVC10";
+		String weedsKey		= diseaseCode;
+
+		//XML 받을 URL 생성
+		String parameter = "apiKey="+ apiKey;
+		parameter += "&serviceCode="+ serviceCode;
+		parameter += "&weedsKey="+ weedsKey;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		String weedsKorName 		= null;		// 국문명
+		String weedsFamily 			= null;		// 잡초 과명
+		String weedsKorOtherName 	= null;		// 국문명 이명
+		String weedsLifeForm 		= null;		// 생활형
+		String weedsHabitat 		= null;		// 서식지
+		String weedsShape 			= null;		// 형태
+		String weedsEcology 		= null;		// 생태
+		String imageListStr 		= "";		// 이미지 주소
+		
+		try{weedsKorName 		= doc.getElementsByTagName("weedsKorName").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsKorName="";}
+		try{weedsFamily 		= doc.getElementsByTagName("weedsFamily").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsFamily="";}
+		try{weedsKorOtherName   = doc.getElementsByTagName("weedsKorOtherName").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsKorOtherName="";}
+		try{weedsLifeForm 	    = doc.getElementsByTagName("weedsLifeForm").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsLifeForm="";}
+		try{weedsHabitat 	    = doc.getElementsByTagName("weedsHabitat").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsHabitat="";}
+		try{weedsShape 		    = doc.getElementsByTagName("weedsShape").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsShape="";}
+		try{weedsEcology 	    = doc.getElementsByTagName("weedsEcology").item(0).getFirstChild().getNodeValue();}catch(Exception e){weedsEcology="";}
+		try{
+			NodeList imageList = doc.getElementsByTagName("imageList");
+			NodeList imageItems = imageList.item(0).getChildNodes();
+			for(int i = 0; i < imageItems.getLength(); i++){
+				imageListStr += imageItems.item(i).getChildNodes().item(2).getFirstChild().getNodeValue();
+				if(i != imageItems.getLength() - 1){
+					imageListStr += ","; 
+				}
+			}
+		}catch(Exception e){imageListStr="";}
+		
+		resultMap.put("weedsKorName",weedsKorName);
+		resultMap.put("weedsFamily",weedsFamily);
+		resultMap.put("weedsKorOtherName",weedsKorOtherName);
+		resultMap.put("weedsLifeForm",weedsLifeForm);
+		resultMap.put("weedsHabitat",weedsHabitat);
+		resultMap.put("weedsShape",weedsShape);
+		resultMap.put("weedsEcology",weedsEcology);
+		resultMap.put("imageListStr",imageListStr);
+		
+		return resultMap;
+	}
+
+	/**
+	 * 해충 검색
+	 * @author 강새벽
+	 * @param diseaseCode
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, String> detailPest(String diseaseCode) throws IOException {
+
+		// http://ncpms.rda.go.kr/npmsAPI/service?
+		// apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC07
+		// &insectKey=H00000230
+		
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+
+		Map<String, String> resultMap = new HashMap<String, String>();
+		
+		String apiKey 		= "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	= "SVC07";
+		String insectKey	= diseaseCode;
+
+		//XML 받을 URL 생성
+		String parameter = "apiKey="+ apiKey;
+		parameter += "&serviceCode="+ serviceCode;
+		parameter += "&insectKey="+ insectKey;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		String insectSpeciesKor		= null;		// 해충 한국종명
+		String ecologyInfo			= null;		// 해충 생태정보
+		String damageInfo			= null;		// 해충 피해정보
+		String stleInfo				= null;		// 해충 형태정보
+		String preventMethod		= null;		// 방제방법
+		String imageListStr			= "";		// 이미지 주소
+		
+		try{insectSpeciesKor = doc.getElementsByTagName("insectSpeciesKor").item(0).getFirstChild().getNodeValue();	} catch(Exception e){insectSpeciesKor="";}
+		try{ecologyInfo		 = doc.getElementsByTagName("ecologyInfo").item(0).getFirstChild().getNodeValue();	} catch(Exception e)	{ecologyInfo="";}
+		try{damageInfo		 = doc.getElementsByTagName("damageInfo").item(0).getFirstChild().getNodeValue();	} catch(Exception e)	{damageInfo="";}
+		try{stleInfo		 = doc.getElementsByTagName("stleInfo").item(0).getFirstChild().getNodeValue();	} catch(Exception e)		{stleInfo="";}
+		try{preventMethod	 = doc.getElementsByTagName("preventMethod").item(0).getFirstChild().getNodeValue();	} catch(Exception e)	{preventMethod="";}
+		
+		try{
+			NodeList imageList = doc.getElementsByTagName("imageList");
+			NodeList imageItems = imageList.item(0).getChildNodes();
+			for(int i = 0; i < imageItems.getLength(); i++){
+				imageListStr += imageItems.item(i).getChildNodes().item(2).getFirstChild().getNodeValue();
+				if(i != imageItems.getLength() - 1){
+					imageListStr += ","; 
+				}
+			}
+		}catch(Exception e){imageListStr="";}
+		
+		resultMap.put("insectSpeciesKor",insectSpeciesKor);
+		resultMap.put("ecologyInfo",ecologyInfo);
+		resultMap.put("damageInfo",damageInfo);
+		resultMap.put("stleInfo",stleInfo);
+		resultMap.put("preventMethod",preventMethod);
+		resultMap.put("imageListStr",imageListStr);
+		
+		return resultMap;
+	}
+	
+	/**
+	 * 해충검색(한글명으로 검색)
+	 * @author 강새벽 
+	 * @param insectName
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, String> detailPestForName(String insectName) throws IOException {
+
+		// http://ncpms.rda.go.kr/npmsAPI/service?
+		// apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC03
+		// &insectKorName=사과응애
+		
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+
+		Map<String, String> resultMap = null;
+		
+		String apiKey 		 = "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	 = "SVC03";
+		String insectKorName = insectName;
+
+		//XML 받을 URL 생성
+		String parameter = "apiKey="+ apiKey;
+		parameter += "&serviceCode="+ serviceCode;
+		parameter += "&insectKorName="+ insectKorName;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		String insectKey = null;
+		try{
+			NodeList list = doc.getElementsByTagName("list");
+			NodeList item = list.item(0).getChildNodes();
+			insectKey = item.item(0).getChildNodes().item(5).getFirstChild().getNodeValue();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		resultMap = detailPest(insectKey);
+		
+		return resultMap;
+	}
+	
+	
+	/**
+	 * 잡초검색(한글명으로 검색)
+	 * @author 강새벽
+	 * @param weedsName
+	 * @return
+	 * @throws IOException
+	 */
+	public Map<String, String> detailWeedsForName(String weedsName) throws IOException {
+
+		// http://ncpms.rda.go.kr/npmsAPI/service?
+		// apiKey=201909ba08ba4bf8d490e4f65e4b83fb0002
+		// &serviceCode=SVC09
+		// &weedsKorName=고사리
+
+		String buildTime = null;
+		String totalCnt = null;
+		String startPoint = null;
+		String displayCount = null;
+		String errorMsg = null;
+		String errorCode = null;
+
+		Map<String, String> resultMap = null;
+		
+		String apiKey 		= "201909ba08ba4bf8d490e4f65e4b83fb0002";
+		String serviceCode 	= "SVC09";
+		String weedsKorName	= weedsName;
+
+		//XML 받을 URL 생성
+		String parameter = "apiKey="+ apiKey;
+		parameter += "&serviceCode="+ serviceCode;
+		parameter += "&weedsKorName="+ weedsKorName;
+		
+		//서버와 통신
+		URL apiUrl = null;
+		InputStream apiStream = null;
+		
+		try {
+			apiUrl = new URL("http://ncpms.rda.go.kr/npmsAPI/service?"+parameter);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		apiStream = apiUrl.openStream();
+		
+		Document doc = null;
+		try{
+			//xml document
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(apiStream);
+			//기본정보
+			try{buildTime = doc.getElementsByTagName("buildTime").item(0).getFirstChild().getNodeValue();}catch(Exception e){buildTime = "";}//생성시간
+			try{totalCnt = doc.getElementsByTagName("totalCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){totalCnt = "";}//전체 갯수
+			try{startPoint = doc.getElementsByTagName("startPoint").item(0).getFirstChild().getNodeValue();}catch(Exception e){startPoint = "";}//시작지점
+			try{displayCount = doc.getElementsByTagName("displayCount").item(0).getFirstChild().getNodeValue();}catch(Exception e){displayCount = "";}//출력갯수
+			try{errorMsg = doc.getElementsByTagName("errorMsg").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorMsg = "";}//에러코드(에러발생시에만 생성)
+			try{errorCode = doc.getElementsByTagName("errorCode").item(0).getFirstChild().getNodeValue();}catch(Exception e){errorCode = "";}//에러메시지(에러발생시에만 생성)
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			apiStream.close();
+		}
+		
+		String weedsKey = null;
+		try{
+			NodeList list = doc.getElementsByTagName("list");
+			NodeList item = list.item(0).getChildNodes();
+			weedsKey = item.item(0).getChildNodes().item(4).getFirstChild().getNodeValue();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		resultMap = detailWeeds(weedsKey);
+		
+		return resultMap;
+	}
+
+}

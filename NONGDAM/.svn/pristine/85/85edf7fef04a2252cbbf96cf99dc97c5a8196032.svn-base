@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="bulletinBoardFileItem">
+	<typeAlias alias="bulletinBoardFileItemVO" type="kr.or.ddit.vo.BulletinBoardFileItemVO"></typeAlias>
+	
+	<statement id="bulletinBoardFileItemList" resultClass="bulletinBoardFileItemVO">
+		SELECT * 
+		 FROM BULLETIN_BOARD_FILE_ITEM 
+		 WHERE BBS_NO = #bbs_no#
+	</statement>
+	
+	<insert id="insertBulletinBoardFileItem" parameterClass="bulletinBoardFileItemVO">
+		<selectKey keyProperty="bbs_file_seq">
+			SELECT BBS_FILE_SEQ.NEXTVAL 
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO BULLETIN_BOARD_FILE_ITEM(BBS_FILE_SEQ
+											,BBS_NO
+											,BBS_FILE_NAME
+											,BBS_FILE_SAVE_NAME
+											,BBS_FILE_CONTENT_TYPE
+											,BBS_FILE_SIZE
+											,BBS_FILE_STATUS
+											,BBS_FILE_REG_DATE
+											,BBS_FILE_DOWN_HIT)		
+										 VALUES(#bbs_file_seq#
+												,#bbs_no#
+												,#bbs_file_name#
+												,#bbs_file_save_name#
+												,#bbs_file_content_type#
+												,#bbs_file_size#
+												,#bbs_file_status#
+												,#bbs_file_reg_date#
+												,#bbs_file_down_hit#)
+	</insert>                                    
+	
+	<select id="bulletinBoardFileItemInfo" parameterClass="map" resultClass="bulletinBoardFileItemVO">
+			SELECT * 
+			FROM BULLETIN_BOARD_FILE_ITEM 
+			WHERE BBS_FILE_SEQ = #bbs_file_seq#	
+	</select>
+</sqlMap>    
+
+
+
+
+
+
+
+
+

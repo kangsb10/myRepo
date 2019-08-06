@@ -1,0 +1,360 @@
+package kr.or.ddit.cropsdoctor;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import kr.or.ddit.cropsdoctor.utiles.NCPMSUtil;
+import kr.or.ddit.cropsdoctor.utiles.NongyakUtil;
+import kr.or.ddit.cropsdoctor.utiles.SearchUtil;
+import kr.or.ddit.service.cropsdoctor.ICropsDoctorService;
+import kr.or.ddit.vo.DiseaseVO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.ibm.watson.developer_cloud.assistant.v1.Assistant;
+import com.ibm.watson.developer_cloud.assistant.v1.model.Context;
+import com.ibm.watson.developer_cloud.assistant.v1.model.InputData;
+import com.ibm.watson.developer_cloud.assistant.v1.model.MessageOptions;
+import com.ibm.watson.developer_cloud.assistant.v1.model.MessageResponse;
+import com.ibm.watson.developer_cloud.service.security.IamOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifiedImages;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifyOptions;
+
+@Controller
+@RequestMapping("/cropsDoctor")
+public class ChatbotController {
+
+	private static Context context = null;
+	private static Context firstContext = null;
+	
+	@Autowired
+	private ICropsDoctorService cropsDoctorService;
+	
+	@RequestMapping("/query")
+	public ModelAndView response(@RequestParam(value="myWord") String myWord,
+								ModelAndView mv,
+								Map<String,String> params){
+		
+		IamOptions iamOptions = new IamOptions.Builder()
+			.apiKey("413Zq5G3D2ZfNbcpmPzmz2osPktKLCykEMFaSfRKC-xr").build();
+		Assistant service = new Assistant("2019-06-28", iamOptions);
+		service.setEndPoint("https://gateway.watsonplatform.net/assistant/api");
+
+		String workspaceId = "46f2da7f-b60e-46e8-8723-76dc3bd47e42";
+		InputData input = new InputData.Builder(myWord).build();
+		
+		MessageOptions options = new MessageOptions.Builder(workspaceId)
+		  .input(input).context(context).build();
+		
+		// 질의 수행
+		MessageResponse response = service.message(options).execute();
+		
+		// 컨텍스트 유지
+		if(firstContext == null){
+			firstContext = response.getContext();
+		}
+		context = response.getContext();
+		
+		
+		System.out.println(response);
+		
+		JsonParser parser = new JsonParser();
+		JsonObject jsonObj = (JsonObject) parser.parse(response.toString());
+		JsonObject contextObj = (JsonObject) parser.parse(context.toString());
+		
+		// purpose, method, entity, object
+		JsonElement jsonElmtPurpose = null;
+		JsonElement jsonElmtMethod 	= null;
+		JsonElement jsonElmtObject 	= null;
+		JsonElement jsonElmtEntity	= null;
+		String purpose 	= null;
+		String method 	= null;
+		String entity	= null;
+		String object 	= null;
+		String isAlarmed = null;
+		
+		try{
+			jsonElmtPurpose = contextObj.getAsJsonObject().get("purpose");
+			purpose = jsonElmtPurpose.getAsString(); 
+		}catch(Exception e){
+			System.out.println("purpose 없음");
+		}
+		try{
+			jsonElmtEntity = jsonObj.get("entities").getAsJsonArray().get(0).getAsJsonObject()
+								.get("entity");
+			entity = jsonElmtEntity.getAsString();
+		}catch(Exception e){
+			System.out.println("entity 없음");
+		}
+		try{
+			jsonElmtObject 	= contextObj.getAsJsonObject().get("object");
+			object = jsonElmtObject.getAsString();
+		}catch(Exception e){
+			System.out.println("object 없음");
+		}
+		
+		try{
+			jsonElmtMethod 	= contextObj.getAsJsonObject().get("method");
+			method 	= jsonElmtMethod.getAsString(); 
+		}catch(Exception e){
+			System.out.println("method 없음");
+		}
+		
+		try{
+			jsonElmtMethod 	= contextObj.getAsJsonObject().get("isAlarmed");
+			method 	= jsonElmtMethod.getAsString(); 
+		}catch(Exception e){
+			System.out.println("isAlarmed 없음");
+		}
+		
+		// 검색 완료 후 context 초기화
+		if(purpose != null && method != null && object != null){
+			context = firstContext;
+		}
+		
+		System.out.println("purpose : " + purpose);
+		System.out.println("method : " + method);
+		System.out.println("entity : " + entity);
+		System.out.println("object : " + object);
+		System.out.println("isAlarmed : " + isAlarmed);
+		
+		
+		// 응답문장
+		JsonElement jsonElmt = ((JsonArray)jsonObj.get("output").getAsJsonObject().get("text"));
+		String resp = jsonElmt.getAsString();
+		
+		// 옵션이 있을 때
+		boolean isOpt = false;
+		JsonArray genericArr = (JsonArray)jsonObj.get("output").getAsJsonObject().get("generic"); 
+		int genericLength = genericArr.size();
+		if(genericLength == 2){
+			try{
+				isOpt = ((genericArr).get(1).getAsJsonObject().get("response_type")
+										.getAsString().equals("option") ? true : false);
+			}catch(NullPointerException e){
+				e.printStackTrace();
+			}
+		}
+		JsonArray jsonElmtOpt = null;
+		if(isOpt){
+			jsonElmtOpt = ((JsonArray)jsonObj.get("output").getAsJsonObject().get("generic"))
+							.get(1).getAsJsonObject().get("options").getAsJsonArray();
+			int optionLength = jsonElmtOpt.size();
+			Map<String,String>[] optionMapArr = new HashMap[optionLength];
+			for(int i = 0; i < optionLength; i++){
+				Map<String,String> temp = new HashMap<String,String>();
+				
+				String label = jsonElmtOpt.get(i).getAsJsonObject().get("label").getAsString();
+				String text = jsonElmtOpt.get(i).getAsJsonObject().get("value").getAsJsonObject()
+								  .get("input").getAsJsonObject().get("text").getAsString();
+				
+				temp.put("label", label);
+				temp.put("text", text);
+				optionMapArr[i] = temp;
+			}
+			mv.addObject("optionMapArr", optionMapArr);
+		}
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		
+		// 알람
+		if(purpose != null && purpose.equals("알람")){
+			
+		}
+		
+		// 검색일 경우
+		if(purpose != null && purpose.equals("검색") && object != null){
+			SearchUtil util = new SearchUtil();
+			if(method != null && method.equals("병명")){
+				mv.addObject("searchList", util.searchList(object));
+			}else{
+				mv.addObject("searchMap", util.searchMap(method, object));
+			}
+		}
+		
+		// 위치기반 농약사 찾기 경우
+		if(purpose != null && purpose.equals("위치")) {
+			
+		}
+		
+		mv.addObject("result", resp);			// 응답문장
+		mv.addObject("object", object);			// object
+		mv.addObject("method", method);			// method
+		mv.addObject("entity", entity);			// entity
+		mv.addObject("purpose", purpose);		// purpose
+		mv.addObject("isAlarmed", isAlarmed);	// isAlarmed
+		mv.setViewName("jsonConvertView");
+		
+		return mv;
+	}
+	
+	
+	//이미지 인식
+	@RequestMapping("/image")
+	public ModelAndView imageResult(ModelAndView andView, 
+				@RequestParam("imgFile") MultipartFile file,
+				@RequestParam(value="object", required=false) String object,
+				@RequestParam(value="method", required=false) String method,
+				@RequestParam(value="entity", required=false) String entity,
+				@RequestParam(value="purpose", required=false) String purpose){
+		
+		String models = null;
+		String apiKeys = null;
+		// b0DE-p9c7AKHngPT85gPFkRsRDN4CizRxizxszwnZlmZ 채소, 잡초
+		// By4NJQCNjTh_9Zcyo8xmwA4QPngXuBg11cxBArF8mhk2 과수, 식용작물
+		
+		// purpose가 검사일 경우만 가능
+		if(purpose.equals("검사")){
+			// 잡초검사
+			if(method.equals("잡초")){
+				apiKeys = "b0DE-p9c7AKHngPT85gPFkRsRDN4CizRxizxszwnZlmZ";
+				models = "Weeds_853892379";
+			}
+			// 병충해검사
+			if(method.equals("병충해")){
+				if(entity.equals("채소")){
+					apiKeys = "b0DE-p9c7AKHngPT85gPFkRsRDN4CizRxizxszwnZlmZ";
+					models = "Vegitable_1852736987";
+				}
+				if(entity.equals("과수")){
+					apiKeys = "By4NJQCNjTh_9Zcyo8xmwA4QPngXuBg11cxBArF8mhk2";
+					models = "Fruit_1937953913";
+				}
+				if(entity.equals("식용작물")){
+					apiKeys = "By4NJQCNjTh_9Zcyo8xmwA4QPngXuBg11cxBArF8mhk2";
+					models = "Crops_1375519145";
+				}
+			}
+			// 해충검사
+			if(method.equals("해충")){
+				// 해충검사도 병충해검사와 동일하게 식용작물, 과수, 채소로 세분화되지만 패스.
+				apiKeys = "A0JgDuw4eGFwfKuhIwrNCDYBoP_k32TR0hZDwxhYuepx";
+				models = "Pest_831004240";
+			}
+		}
+		
+		// Authentication
+		IamOptions iamOptions = new IamOptions.Builder().apiKey(apiKeys).build();
+		VisualRecognition visualRecognition = new VisualRecognition("6.9.0", iamOptions);
+		
+		//Classify an image
+		VisualRecognition service = new VisualRecognition("2019-06-28", iamOptions);
+		
+		// MultipartFile to File
+		File convFile = null;
+		try{
+			convFile = new File(file.getOriginalFilename());
+		    convFile.createNewFile(); 
+		    FileOutputStream fos = new FileOutputStream(convFile);
+		    fos.write(file.getBytes());
+		    fos.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		ClassifyOptions options = null;
+		try {
+			options = new ClassifyOptions.Builder().imagesFile(convFile).threshold((float) 0.6)
+							.classifierIds(Arrays.asList(models)).build();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		ClassifiedImages response = service.classify(options).execute();
+		System.out.println(response);
+		
+		JsonParser parser = new JsonParser();
+		JsonObject jsonObj = (JsonObject) parser.parse(response.toString());
+		
+		JsonElement jsonElmt = jsonObj.getAsJsonArray("images").get(0)
+			.getAsJsonObject().get("classifiers").getAsJsonArray().get(0)
+			.getAsJsonObject().get("classes").getAsJsonArray().get(0)
+			.getAsJsonObject().get("class");
+		
+		String result = jsonElmt.getAsString();
+		
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("class_nm", result);
+		DiseaseVO diseaseVO = null;
+		try {
+			diseaseVO = cropsDoctorService.diseaseInfo(params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// 병충해 정보
+		NCPMSUtil ncpmsUtil = new NCPMSUtil();
+		Map<String, String> ncpmsResultMap = null;
+		try{
+			if(method.equals("잡초")){
+				ncpmsResultMap = ncpmsUtil.detailWeeds(diseaseVO.getDisease_code());
+			}else if(method.equals("해충")){
+				ncpmsResultMap = ncpmsUtil.detailPest(diseaseVO.getDisease_code());
+			}else{
+				ncpmsResultMap = ncpmsUtil.detailDisease(diseaseVO.getDisease_code());
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		// 농약 정보
+		NongyakUtil nongyakUtil = new NongyakUtil();
+		Map<String, String> nongyakResultMap = null;
+		try {
+			nongyakResultMap 
+				= nongyakUtil.detailNongyak(ncpmsResultMap.get("sickNameKor"), 
+											ncpmsResultMap.get("cropName"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// 상품ID입력
+		Map<String, String> goodsParams = new HashMap<String, String>();
+		goodsParams.put("goods_nm", nongyakResultMap.get("pestiBrandNames"));
+		String goodsId = null;
+		try {
+			String temp = cropsDoctorService.selectGoodsNm(goodsParams);
+			if(temp != null){
+				goodsId = temp; 
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		nongyakResultMap.put("goodsId", goodsId);
+		System.out.println("goodsId : " + goodsId);
+		
+		// 농약 사용정보
+		Map<String,String> nongyakUsageMap = null;
+		try {
+			nongyakUsageMap 
+				= nongyakUtil.nongYakUsage(nongyakResultMap.get("pestiCodes"), 
+										   nongyakResultMap.get("diseaseUseSeqs"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		andView.addObject("method", method);
+		andView.addObject("nongyakUsageMap", nongyakUsageMap);
+		andView.addObject("nongyakResultMap", nongyakResultMap);
+		andView.addObject("ncpmsResultMap", ncpmsResultMap);
+		andView.setViewName("jsonConvertView");
+		
+		return andView;
+	}
+	
+}

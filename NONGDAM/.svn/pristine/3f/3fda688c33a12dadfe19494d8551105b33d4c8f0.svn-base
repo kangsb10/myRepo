@@ -1,0 +1,309 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>CropsDoctor 메인</title>
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/css/admin/cropsdoctor/adminCropsdoctor.css">
+
+<link rel="stylesheet"href="${pageContext.request.contextPath}/css/admin/cropsdoctor/main.css">
+<link rel="stylesheet"href="${pageContext.request.contextPath}/css/admin/cropsdoctor/nestable.css">
+<script type="text/javascript"src="${pageContext.request.contextPath }/js/jquery.form.min.js"></script>
+<script type="text/javascript"src="${pageContext.request.contextPath }/js/admin/cropsdoctor/bootstrap-notify.min.js"></script>
+<script type="text/javascript"src="${pageContext.request.contextPath }/js/admin/cropsdoctor/adminCropsdoctor.js"></script>
+<script type="text/javascript">
+$(function() {
+
+
+	$("#vsPage").on("click", function() {
+		$(location).attr("href", "/admin/cropsdoctor/mngAstt2.do");
+	})
+
+	$("#botPage").on("click", function() {
+		$(location).attr("href", "/admin/cropsdoctor/mngAstt.do");
+	})
+
+})
+</script>
+</head>
+<body>
+	<div class="row">&nbsp;</div>
+	<div class="row">&nbsp;</div>
+	<div class="container">
+		<h2>CropsDoctor</h2>
+		<button id="botPage" type="button" class="btn btn-default">Chatbot</button>
+		&nbsp;
+		<button id="vsPage" type="button" class="btn btn-default">Visual Recognition</button>
+		<div class="row">&nbsp;</div>
+		<h3>Visual Recognition</h3>
+		<div class="panel-body">
+			<div class="panel-group vsListDiv">
+				<c:forEach items="${vsArr }" var="vsVar" varStatus="status">
+					<div class="panel panel-default vsTemp">
+						<div class="panel-heading">
+							<h4 class="panel-title">
+								<a id="${vsVar.classifierId }" class="collapsed"
+									data-toggle="collapse" data-parent="#accordion"
+									href="#vs${status.count }">
+									<div class="row">
+										<div class="col">${vsVar.classifierId }</div>
+										<div class="col">${vsVar.name }</div>
+										<c:choose>
+											<c:when test="${vsVar.status eq 'ready'}">
+												<div class="col">
+													<span class="label label-sm label-success">${vsVar.status }</span>
+												</div>
+											</c:when>
+											<c:otherwise>
+												<div class="col">
+													<span class="label label-sm label-warning">${vsVar.status }</span>
+												</div>
+											</c:otherwise>
+										</c:choose>
+									</div>
+								</a>
+							</h4>
+						</div>
+						<div id="vs${status.count }" class="panel-collapse collapse">
+							<div class="panel-body">
+								<table class="table" title="${vsVar.classifierId }">
+									<thead>
+										<tr>
+											<th class="text-center">Class</th>
+											<!-- <th class="text-center"></th> -->
+										</tr>
+									</thead>
+									<tbody id="vsTbody${status.count}">
+									</tbody>
+								</table>
+								<button type="button" class="btn btn-warning vsUpdateBtn">수정</button>
+								&nbsp;
+								<button type="button" class="btn btn-danger vsDeleteBtn">삭제</button>
+							</div>
+						</div>
+					</div>
+				</c:forEach>
+			</div>
+		</div>
+		<!-- END : panel-body -->
+		<button id="addClassBtn" data-toggle="collapse"
+			data-target="#addClassDiv" class="btn btn-success">Add Class
+		</button>
+		<div id="addClassDiv" class="panel-body pan collapse">
+			<form id="insertClassForm" enctype="multipart/form-data"
+				method="post">
+				<div class="form-body pal classFormSector">
+					<div class="form-group">
+						<div class="input-icon right">
+							<input name="classifierName" type="text" placeholder="Input classifier name" class="form-control" />
+						</div>
+					</div>
+					<hr>
+					<span><h4>Add File</h4></span> <br />
+					<div class="row form-group">
+						<div class="col-xs-6 input-icon right">
+							<input name="classNames" type="text"
+								placeholder="Input classname..." class="form-control" />
+						</div>
+						<div class="col-xs-6" style="padding-top: 4px">
+							<input name="classFiles" type="file"
+								placeholder="Inlcude some file" />
+						</div>
+					</div>
+					<div class="row form-group">
+						<div class="col-xs-6 input-icon right">
+							<input name="classNames" type="text"
+								placeholder="Input classname..." class="form-control" />
+						</div>
+						<div class="col-xs-6" style="padding-top: 4px">
+							<input name="classFiles" type="file"
+								placeholder="Inlcude some file" />
+						</div>
+					</div>
+				</div>
+				<br /> <br /> <br />
+				<div class="form-actions text-right pal">
+					<button id="addClassFilesBtn" type="button" class="btn btn-blue">
+						<i class="fa fa-plus"></i>
+					</button>
+					<button id="classSubmitBtn" type="submit" class="btn btn-info">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/admin/cropsdoctor/adminCropsdoctorEntity.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/admin/cropsdoctor/adminCropsdoctorVS.js"></script>
+<script type="text/javascript">
+	$(function() {
+
+		alert("sdf");
+
+		var vsVal = null;
+		$(".vsTemp").on("click",function() {
+			if ($(this).find("h4").find("a").attr("class") == "collapsed") {
+
+				if ($(this).find("h4").find("a").find("span").attr("class") == "label label-sm label-warning") {
+					getNofify("Info","현재 학습중이므로 조회 및 수정할 수 없습니다.","info");
+					return false;
+				}
+
+				vsVal = $(this).find("h4").find("a").attr("id");
+				console.log("vsVal : " + $(this).find("h4").find("a").attr("id"));
+
+				var tbodyName = $(this).children(".panel-heading").next().find("tbody").attr("id");
+				console.log("VS tbodyName : " + tbodyName);
+
+				$.ajax({
+					url : "/admin/cropsdoctor/vs/getClasses.do",
+					data : {
+						classifierName : vsVal
+					},
+					type : "post",
+					success : function(result) {
+						var classArr = result.resultArr;
+						$("#" + tbodyName).html(
+								printClasses(classArr));
+					},
+					error : function(error) {
+						console.log(error.status);
+					}
+				})
+			}
+		});
+
+		$("#addClassFilesBtn").on("click", function() {
+			addClassFilesDiv();
+		})
+
+		// VS 입력
+		$("#classSubmitBtn").on("click",function(e) {
+
+			$("#insertClassForm").ajaxForm({
+				url : "/admin/cropsdoctor/vs/insertClass.do",
+				dataType : "json",
+				method : "post",
+				success : function(result) {
+					console
+							.log("insertClassForm의 result : "
+									+ result.result);
+					var isInserted = eval(result.result);
+					if (isInserted) {
+						getNofify(
+								"Success!",
+								"class 입력 성공! 업로드 크기에 따라 학습시간이 길어질 수 있습니다.",
+								"success");
+						// 리스트 불러오기
+						getVSList();
+					} else {
+						getNofify(
+								"Failed",
+								"class 입력 실패! 다시 시도해주세요.",
+								"warning");
+					}
+				},
+				error : function(error) {
+					console.log(error.status);
+					getNofify("Warning!",
+							"시스템 오류입니다.",
+							"danger");
+				}
+			});
+
+		});
+
+		// VS 삭제
+		$(".vsDeleteBtn").on("click", function() {
+			var classifierId = $(this).prev().prev().attr("title");
+			console.log(".vsDeleteBtn click : " + classifierId);
+			if (confirm("정말로 삭제하시겠습니까?")) {
+				$.ajax({
+					url : "/admin/cropsdoctor/deleteClass.do",
+					type : "post",
+					data : {
+						classifierId : classifierId
+					},
+					success : function(result) {
+						var isDeleted = result.result;
+						if (isDeleted) {
+							getNofify("Success!", "삭제되었습니다.", "success");
+							//리스트 출력
+							getVSList();
+						} else {
+							getNofify("Failed!", "삭제 실패", "warning");
+						}
+					},
+					error : function(error) {
+						getNotify("Danger!", "시스템 오류입니다.", "danger")
+					}
+				})
+			} else {
+				return false;
+			}
+		})
+
+		var entityVal = null;
+		$(".entityTemp").on("click",function() {
+			if ($(this).find("h4").find("a").attr("class") == "collapsed") {
+				entityVal = $(this).find("h4").find("a").text();
+				console.log("entityVal : " + entityVal);
+
+				// 닫혔을 때 : panel-collapse collapse
+				// 열렸을 때 : panel-collapse in
+				var tbodyName = $(this).children(".panel-heading").next().find("tbody").attr("id");
+
+				$.ajax({
+					url : "/admin/cropsdoctor/getValuesArr.do",
+					data : {
+						entityNM : entityVal
+					},
+					type : "post",
+					success : function(result) {
+						resultArr = result.result;
+						console.log("resultArr : "
+								+ resultArr);
+						var print = printValues(resultArr);
+						$("#" + tbodyName).html(print);
+					},
+					error : function(error) {
+						console.log("getValuesArr() error!! // " + error.status);
+					}
+				});
+			}
+		});
+
+		$("#addValuesBtn").on("click",function() {
+			var htmls = "<div class='form-group'>"
+					+ "<div class='input-icon right'>"
+					+ "<input name='inputValues' type='text' placeholder='input Values' class='form-control' />"
+					+ "</div>" + "</div>";
+			$(".addValuesList").append(htmls)
+		});
+
+		$("#insertEntForm").ajaxForm({
+			url : "/admin/cropsdoctor/entities/insertEntity.do",
+			dataType : "json",
+			method : "post",
+			success : function(result) {
+				var chk = eval(result.result);
+				console.log("Entity 입력 여부 : " + chk);
+				if (chk) {
+					getNofify("Success!", "입력이 완료되었습니다.", "success");
+					$("#addEntityBtn").trigger("click");
+					//리스트 출력
+				} else {
+					getNofify("Failed!", "입력 실패", "warning");
+				}
+			},
+			error : function(error) {
+				console.log(error.status);
+				getNofify("Warning!", "시스템 오류입니다!", "danger");
+			}
+		});
+
+	})
+</script>
+</html>

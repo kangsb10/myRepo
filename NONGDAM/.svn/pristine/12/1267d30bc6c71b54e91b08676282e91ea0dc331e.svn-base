@@ -1,0 +1,695 @@
+<%@ page language="JAVA" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<head>
+<meta http-equiv="x-ua-compatible" content="IE=edge">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+<meta http-equiv="pragma" content="no-cache"> 
+<meta name="format-detection" content="telephone=no"> 
+<link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap&subset=korean" rel="stylesheet">
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/npms.js"></script> 
+<!-- 추가 --> 
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/dwf.js"></script> 
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/geo-min.js"></script> 
+	<style>
+      h1,p,span,a,div {
+        font-family: 'Do Hyeon', sans-serif;
+      }
+      
+      h1 {
+        font-weight: 400;
+         font-size: 25px;
+         color: #FEEACC;
+      }
+      
+      
+      span,a {
+        font-weight: 300;
+         font-size: 20px;
+         color: #FBD9A7;
+      }
+      
+      
+      
+      p {
+        font-weight: 200;
+        font-size: 15px;
+        color: #FFFFFF;
+      }
+      
+      div#a, div#b {
+        font-weight: 200;
+        font-size: 40px;
+        color: #FFFFFF;
+      }
+      
+		a{text-decoration:none; color:white}
+		.pull-right{float:right}
+		.main_popup{width:50%; height:20%; border:3px solid #3E4156;background-color: white;}
+		.main_popup1{width:50%; height:20%; border:3px solid #3E4156;background-color: white;}
+		.main_popup2{width:50%; height:20%; border:3px solid #3E4156;background-color: white;}
+		.popup_bottom{
+		    background-color: #3E4156;
+		    color: white;
+		    height: 15%;
+		    padding: 2px 10px 3px 10px;
+		    width:100%;
+		}
+	.white {
+	font-size: 13px;
+	}	
+	a.nongnews{
+	color: #0B6121;
+	}
+    </style>
+</head>
+<div class='blurred-container'>
+        <div class="motto" style="width: 195px; margin: 0 auto;">
+            <div class="border no-right-border" id="a" >응</div><div class="border" id="b" >애</div>
+        </div>
+        <div class="img-src" style="background-image: url('/img/aas.jpg')"><img src=""/></div> 
+        <div class='img-src blur' style="background-image: url('/img/cover_4_blur.jpg')"></div>
+   </div>
+    
+   <div id="main_popup" class="main_popup" style="position: fixed; z-index:10000; top:70px; left:0px; display: none;">
+		<a href="http://192.168.201.14/user/mainPage/content.do"><img alt="" src="/img/DIA.png" style="width:100%;height:100%;"/></a>
+		<div class="popup_bottom">
+			<a href="javascript:closePopupNotToday()" class="white">오늘하루 그만보기</a>
+			<a class="pull-right white" href="javascript:closeMainPopup();">닫기</a>
+		</div>
+	</div>
+   <div id="main_popup1" class="main_popup1" style="position: fixed; z-index:10000; top:270px; left:205px; display: none;">
+		<a href="https://www.ddit.or.kr/index"><img alt="" src="/img/ppl.png" style="width:100%;height:100%;"/></a>
+		<div class="popup_bottom">
+			<a href="javascript:closePopupNotToday1()" class="white">오늘하루 그만보기</a>
+			<a class="pull-right white" href="javascript:closeMainPopup1();">닫기</a>
+		</div>
+	</div>
+   <div id="main_popup2" class="main_popup2" style="position: fixed; z-index:10000; top:470px; left:0px; display: none;">
+		<a href="https://www.farmhannong.com/contents/main.asp"><img alt="" src="/img/ppl2.png" style="width:100%;height:100%;"/></a>
+		<div class="popup_bottom">
+			<a href="javascript:closePopupNotToday2()" class="white">오늘하루 그만보기</a>
+			<a class="pull-right white" href="javascript:closeMainPopup2();">닫기</a>
+		</div>
+	</div>
+	
+	
+<!-- 	<div customattr="spotFore" style="display:none;"></div>  -->
+     <div customattr="areaWeather" style="display:none;"> 
+      <h2></h2> 
+      <p></p> 
+      <div class="weather"> 
+       <!-- ajax --> 
+       <span></span>
+       <!-- 날씨 클래스 적용 weather_icon1~ --> 
+       <span></span> 
+      </div> 
+      <!-- ajax --> 
+      <p class="forecast" id="indcHeadData" ></p> 
+     </div> 
+
+<section id="blog">
+   <div class="container">
+      <div class="row">
+
+<!-- 날씨정보 -->
+         <div class="wow fadeInUp col-md-6 col-sm-6" data-wow-delay="1s">
+              <div class="blog-thumb">
+                  <a href="single-post.html"><h1 class="a" style="color: #FFFFFF;">오늘의 날씨정보</h1></a>
+<!--                   <a href="single-post.html" style="position: relative; top: -40px;"><img src="img/main/weath.png" class="img-responsive" alt="Blog"></a> -->
+                    <div class="post-format" style="margin-top: -37px;">
+                          <span style="color: #FEEACC;">기온 <a href="#" style="color: #FEEACC;" id="todaysTemp">28도</a></span>
+                          <span style="color: #FEEACC;"> <i class="fa fa-date"></i>강수확률 </span>
+                      </div>
+<!--                    <span id ="todaysWeather"></span> -->
+                  <img src="" id="todaysWeather">
+<!--                     <a href="single-post.html" style="border-radius: 0; padding: 7px 25px 7px 25px;">Full Article</a> -->
+                    <a href="single-post.html" style="color: #fff; background: #346D4E; border-radius: 20px; padding: 7px 25px 7px 25px; ">보러가기</a>
+                </div>
+          </div>
+<!-- 검역정보 -->		    
+         <div class="wow fadeInUp col-md-6 col-sm-6" data-wow-delay="1s">
+         	  <div class="blog-thumb" style="" >
+         		   <a href="single-post.html"><h1 class="a" style="color: #FFFFFF;">오늘의 검역정보</h1></a>
+						<div class="post-format" customattr="spotFore" style="display:none;"></div> 
+         		     <a href="${pageContext.request.contextPath }/forecastmap/fore1_1.do" style="color: #fff; background: #346D4E; border-radius: 20px; padding: 7px 25px 7px 25px; ">보러가기</a>
+         	    </div>
+		    </div>
+<!-- 농민뉴스 -->		    
+         <div class="wow fadeInUp col-md-6 col-sm-6" data-wow-delay="1s">
+         	  <div class="blog-thumb">
+         		   <a href="single-post.html"><h1 class="a" style="color: #848484;">농민뉴스</h1></a>
+	         		     <table>
+							<c:forEach items="${newsList}" var="newInfo">
+									<tr>
+										<td ><a href="${newInfo.link }" class="nongnews"  target='_blank'>${newInfo.title }</a></td>	
+<%-- 										<td><a href="${newInfo.link }" target='_blank'>${newInfo.title }</a></td>	 --%>
+									</tr>
+							</c:forEach>
+						</table>
+         		     <a href="single-post.html" style="margin-top: -37px; color: #fff; background: #346D4E; border-radius: 20px; padding: 7px 25px 7px 25px; ">보러가기</a>
+         	    </div>
+		    </div>
+
+      </div>
+   </div>
+</section>
+
+<!-- Javascript 
+================================================== -->
+<script src="/js/main/jquery.js"></script>
+<!-- <script src="/js/main/bootstrap.min.js"></script> -->
+<script src="/js/main/wow.min.js"></script>
+<!-- <script src="/js/main/custom.js"></script> -->
+<script type="text/javascript">
+
+//$( document ).ready(function() {
+//alert('환영합미다');
+
+function parseWeather() { 
+//   alert('환영합미다1');
+   loadJSON(function(response) 
+
+   {
+        
+       var jsonData = JSON.parse(response);
+//         document.getElementById("todaysWeather").innerHTML = jsonData["list"][0]["weather"][0]["main"];
+   });
+}
+
+//function loadJSON(callback) //url의 json 데이터 불러오는 함수
+//{   
+//var url = "http://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=230e19eb41d6add7a83c9372285ff2e5";
+//var request = new XMLHttpRequest();
+
+//request.overrideMimeType("application/json");
+//request.open('GET', url, true);
+//request.onreadystatechange = function () 
+//{
+//  if (request.readyState == 4 && request.status == "200") 
+//  {
+//   alert('환영합미다2');
+//    callback(request.responseText);
+//  }
+//};
+//request.send(null);  
+//} 
+function loadJSON(callback) //url의 json 데이터 불러오는 함수
+{
+var apiURI = "http://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=230e19eb41d6add7a83c9372285ff2e5";
+$.ajax({
+ url: apiURI,
+ dataType: "json",
+ type: "GET",
+ async: "false",
+ success: function(resp) {
+     console.log(resp);
+     console.log("현재온도 : "+ (resp.main.temp- 273.15) );
+     console.log("현재습도 : "+ resp.main.humidity);
+     console.log("날씨 : "+ resp.weather[0].main );
+     console.log("상세날씨설명 : "+ resp.weather[0].description );
+     console.log("날씨 이미지 : "+ resp.weather[0].icon );
+     console.log("바람   : "+ resp.wind.speed );
+     console.log("나라   : "+ resp.sys.country );
+     console.log("도시이름  : "+ resp.name );
+     console.log("구름  : "+ (resp.clouds.all) +"%" );         
+     
+		var imgURL = "http://openweathermap.org/img/w/" + resp.weather[0].icon + ".png";
+        $("#todaysWeather").attr("src", imgURL);
+		
+
+ }
+});
+}
+
+window.onload = function()
+{
+//alert('환영합미다');
+parseWeather();
+}
+
+
+//});
+
+
+if(getCookie("notToday")!="Y"){
+	$("#main_popup").show('fade');
+	$("#main_popup1").show('fade');
+	$("#main_popup2").show('fade');
+}
+
+function closePopupNotToday(){	             
+	setCookie('notToday','Y', 1);
+	$("#main_popup").hide('fade');
+}
+function closePopupNotToday1(){	             
+	setCookie('notToday','Y', 1);
+	$("#main_popup1").hide('fade');
+}
+function closePopupNotToday2(){	             
+	setCookie('notToday','Y', 1);
+	$("#main_popup2").hide('fade');
+}
+
+
+function setCookie(name, value, expiredays) {
+var today = new Date();
+    today.setDate(today.getDate() + expiredays);
+
+    document.cookie = name + '=' + escape(value) + '; path=/; expires=' + today.toGMTString() + ';'
+}
+
+function getCookie(name) 
+{ 
+var cName = name + "="; 
+var x = 0; 
+while ( x <= document.cookie.length ) 
+{ 
+    var y = (x+cName.length); 
+    if ( document.cookie.substring( x, y ) == cName ) 
+    { 
+        if ( (endOfCookie=document.cookie.indexOf( ";", y )) == -1 ) 
+            endOfCookie = document.cookie.length;
+        return unescape( document.cookie.substring( y, endOfCookie ) ); 
+    } 
+    x = document.cookie.indexOf( " ", x ) + 1; 
+    if ( x == 0 ) 
+        break; 
+} 
+return ""; 
+}
+
+function closeMainPopup(){
+$("#main_popup").hide('fade');
+}
+function closeMainPopup1(){
+$("#main_popup1").hide('fade');
+}
+function closeMainPopup2(){
+$("#main_popup2").hide('fade');
+}
+
+
+// 경보
+$(document).ready(function(){
+	fncRegionForeHeaderAjax();	// 예측경보 발생 병해충 ajax
+	viewCurrentPoisition();		// 위치정보
+});
+
+var villageForecastParams = function() {
+/* WAS내 API구분 변수 */
+var CROS_CURRENT_POSITION 				= "CURRENT_POSITION";
+var CROS_CURRENT_POSITION_BETA			= "CURRENT_POSITION_BETA";
+var CROS_CURRENT_POSITION_GOOGLE_MAPS	= "CURRENT_POSITION_GOOGLE_MAPS";
+
+/* V-World API 변수 */
+var gService 	= "address";
+var gVersion 	= "2.0";
+var gRequest 	= "GetAddress";
+var gKey 		= "5D311F92-D980-3E25-976C-34C324C59747";
+var gFormat		= "json";
+var gErrorFormat= "json";
+var gCrs 		= "epsg:4326";
+//var gType 		= "both";
+var gType 		= "BOTH";		// PARCEL : 지번주소 ROAD : 도로명주소 both: 둘다.
+var gZipcode 	= "false";
+var gSimple 	= "true";
+var gDomain		= "192.168.201.30";
+
+/* GoogleMaps API 변수 */
+var gGoogleApiType	= "G_TYPE_2";	// V_TYPE_1: WAS를 통해 V-World API 호출, V_TYPE_2: WAS를 통해 V-World Beta API 호출, G_TYPE_1: WAS를 통해 API 호출, G_TYPE_2: ajax를 통해 GoogleMapsAPI를 호출(jsonp 아님)
+var gApiUrl			= "https://maps.googleapis.com/maps/api/geocode/json";
+var gLatlng			= "";
+var gGoogleApiKey	= "AIzaSyD5aEToAPNl6fyUoTciq4nX9ingKGp5pSg";
+var gSensor			= "true";
+var gLanguage		= "ko";
+var gRegion			= "ko";
+var gNoSuchAddr		= ""	//"현재위치를 확인할 수 없습니다.";
+var gReplaceAddr	= "대한민국 ";	/* API 호출결과에 '대한민국 '이 붙어서 나옴 */
+
+return {
+	getGoogleMapsApiParams : function(lon, lat){
+		var params = {
+				"reqType":	CROS_CURRENT_POSITION_GOOGLE_MAPS,
+				"latlng":	(lat+","+lon),
+				"key":		gGoogleApiKey,
+				"language":	gLanguage,
+				"sensor":	gSensor,
+				"region":	gLanguage
+				};
+		return params;
+	},
+	getVWorldApiBetaParams : function(lon, lat){
+		var params = {
+				"reqType":	CROS_CURRENT_POSITION_BETA,
+				"x":		lon,
+				"y":		lat,
+				"apiKey":	gKey,
+				"domain":	gDomain,
+				"output":	gFormat,
+				"epsg":		gCrs,
+				};
+		return params;
+	},
+	getVWorldApiParams : function(lon, lat){
+		var params = {
+				"reqType":		CROS_CURRENT_POSITION,
+				"service":		gService,
+				"version":		gVersion,
+				"request":		gRequest,
+				"key":			gKey,
+				"format":		gFormat,
+				"errorformat":	gErrorFormat,
+				"crs":			gCrs,
+				"type":			gType,
+				"zipcode":		gZipcode,
+				"simple":		gSimple,
+				"domain":		gDomain,
+				"point":		(lon + "," + lat),
+				};
+		return params;
+	},
+	getGoogleApiType : function(){
+		return gGoogleApiType;
+	},
+	getGoogleMapsApiUrl : function(){
+		return gApiUrl;
+	},
+	getGoogleMapsApiKey : function(){
+		return gGoogleApiKey;
+	},
+	getLanguage : function(){
+		return gLanguage;
+	},
+	getRegion : function(){
+		return gRegion;
+	},
+	getNoSuchAddr : function(){
+		return gNoSuchAddr;
+	},
+	getReplaceAddr : function(addr){
+		// 주소앞 '대한민국 ' 텍스트 제거
+		//return addr.replace(gReplaceAddr, "");
+		// 시도 시군구 리턴.
+		var sidoSigunArr = addr.split(" ");
+		return sidoSigunArr[1] + " " + sidoSigunArr[2];
+	}
+}
+}();
+
+var position;
+// 동네예보 key
+var apikey = escape('a2Y7TAO4dHhzhBwolvv3rTpCwKDILv32jCOuTBihK2qBJLRatkP8ag5Ol5H%2BFKrsDQrbKpu3AbsQAL3MXDO1tQ%3D%3D');		//키에 특수문자 존재시 인코딩 (운영)
+//var apikey = escape('9H8oHCqmp1kqH52SAn2l1K9pvXoYsOQY5A0LIwflWKPy9Tzlwl2mkTm2Ov9xP6wJ2J3t%2BBdqmBrJDAUic8Oveg%3D%3D');			//20190520 테스트용
+var today = new Date();
+var week = new Array('일','월','화','수','목','금','토');
+var year = today.getFullYear();
+var month = today.getMonth()+1;
+var day = today.getDate();
+var hours = today.getHours();
+var minutes = today.getMinutes();
+
+var address;
+var latlng = null;
+
+var intervalId;
+var isEnableGeoModule = false;
+
+function viewCurrentPoisition() {
+
+	// 위치정보 모듈이 제대로 동작하지 않을경우 5초후 경고 메시지를 보여준다.
+	setTimeout(chkGeoPosition, 5000);
+	//console.log(geo_position_js.init());
+	//console.log(position);
+	if(geo_position_js.init()){
+		if(position != undefined){
+			getGeoPosition(position);
+		}else{
+			geo_position_js.getCurrentPosition(getGeoPosition,getGeoPositionError,{enableHighAccuracy:true,options:5000});		// 완료시 주석해제
+		}
+	} else {
+		console.log('위치정보를 사용할 수 없습니다. 위치정보 수신을 위해 GPS를 켜주십시오.');
+		intervalId = setInterval(function(){
+			clearInterval(intervalId);
+			if(geo_position_js.init()){
+				if(position != undefined){
+					getGeoPosition(position);
+				}else{
+					geo_position_js.getCurrentPosition(getGeoPosition,getGeoPositionError,{enableHighAccuracy:true,options:5000});
+				}
+			}
+		}, 1000);
+	}
+}
+
+function chkGeoPosition() {
+if( !isEnableGeoModule && position == undefined)
+	console.log('위치정보를 사용할 수 없습니다.');
+}
+
+/**
+* 위치정보를 조회할 수 없을 때 표출됨
+*/
+function getGeoPositionError(p) {
+isEnableGeoModule = true;
+console.log('위치정보를 사용할 수 없습니다.\nGPS 정보를 사용할 수 없거나 수신할 수 없습니다.');
+setHeaderRightHtml("N", "N");		// 위치정보 조회 실패시 이달의병해충만 호출
+}
+
+/**
+* 위치정보가 정상적으로 조회 되었다.
+*   - 위치정보를 전역변수에 저장한다.
+*   - 위치정보를 주소를 조회한다.
+*   - 주소를 전역변수에 저장한다.
+*   - 병해충 예측정보를 표출하는 함수를 호출한다.
+*/
+function getGeoPosition(position){
+var passAjax = false;			// 주소정보 ajax 호출 여부 
+isEnableGeoModule = true;
+
+latlng = {
+	lng: position.coords.longitude,
+	lat: position.coords.latitude
+};
+var x = position.coords.longitude;
+var y = position.coords.latitude;
+
+// 위치정보 쿠키 생성
+var getLngCk = getCookie("oldLng");
+var getLatCk = getCookie("oldLat");
+
+if(getLatCk == null || getLatCk == 'undefined' || getLatCk == '' || getLngCk == null || getLngCk =='undefined' || getLngCk == '' ){
+	//console.log("1-1");
+	setCookie("oldLng", x, 1);		
+	setCookie("oldLat", y, 1);
+}else{
+	var oldX = Number(getLngCk);
+	var oldY = Number(getLatCk);
+	
+	if( (oldX >= (Number(x)-Number(0.00001)) && oldX < (Number(x)+Number(0.00001)) && oldY >= (Number(y)-Number(0.00001)) && oldY < (Number(y)+Number(0.00001))) && (getCookie("addressCk") != "" && getCookie("addressCk") != "undefined") ){
+		//console.log("1-2");
+		passAjax = true;		// 주소정보를 호출하지 않음
+	}else{
+		//console.log("1-3");
+		setCookie("oldLng", x, 1);
+		setCookie("oldLat", y, 1);
+	}
+}
+
+if(!passAjax){
+	// vWorld를 통한 주소값 세팅.
+	var params = villageForecastParams.getVWorldApiParams(x,y);
+	$.ajax({
+			url: 		"https://api.vworld.kr/req/address"
+			,data: 		params
+			,dataType : "jsonp"
+        	,jsonp : "callback"
+			,async:		false
+			,timeout:	3000
+			,success: function(data) {
+				if(data.response.status == "OK"){
+					var obj = "";
+					if(data.response.result.length > 1){
+						obj = data.response.result[1].structure;
+					}else{
+						obj = data.response.result[0].structure;
+					}
+					address = obj.level1 + " " + obj.level2 + " " + obj.level3;
+					setCookie("addressCk", address, 1);
+				}else{
+					address = villageForecastParams.getNoSuchAddr();
+					console.log(data.response.status + " 결과가 없거나 호출실패");
+					//console.log(data.response.error.text);
+				}
+			},
+			error: function(e){
+				address = villageForecastParams.getNoSuchAddr();
+				console.log(e);
+			},
+			complete: function(){
+				//console.log("1");
+	            viewFarmInfo();		// 기상정보 호출
+	        }
+		});
+}else{		// 위치정보가 좌표 범위내에 있는 경우 기존 주소정보 세팅
+	address = getCookie("addressCk");
+	viewFarmInfo();		// 기상정보 호출
+}
+}
+
+// 주소정보 조회 성공/실패 여부와 관계없이 위치정보가 조회됬으면 기상정보 조회 js호출
+function viewFarmInfo() {
+var passAjax = true;								// 기상정보 ajax 호출 여부
+var getTimeCk = getCookie("oldTime");			// 기상정보 호출 시간 쿠키 생성
+var oldTime = new Date(getTimeCk);
+var rs = dfs_xy_conv("toXY", latlng.lat, latlng.lng);
+
+if(getTimeCk == null || getTimeCk =='undefined' || getTimeCk == ''){
+	passAjax = false;
+}else{
+	if( (today - oldTime) > (60 * 60 * 1000) ){		// 1시간이상 지난경우
+		passAjax = false;
+	}else{
+		if(oldTime.getMinutes() < 40 && today.getMinutes() >= 40){
+			passAjax = false;
+		}
+	}
+}
+
+if(!passAjax){
+	//console.log("2-1");
+	setCookie("oldTime", today, 1);					// 이전 ajax호출 시간 현재시간으로 set
+	downForecastGrib( apikey, year, month, day, hours, minutes, rs.nx, rs.ny );		//dwf.js
+}else{
+	//console.log("2-2");
+	var wCls = getCookie("oldWeatherClass");
+	var t1h = getCookie("oldT1H");
+	if(wCls != null && wCls !='undefined' && wCls != ''){
+// 		$("div[customAttr='areaWeather']").children(".weather").children("span").eq("0").attr("class", wCls);
+// 		$("div[customAttr='areaWeather']").children(".weather").children("span").eq("1").html(t1h);
+		setHeaderRightHtml("Y", "Y");
+	}else{
+		setHeaderRightHtml("Y", "N");
+	}
+}
+}
+
+/******************************************
+* 지점 기상정보 설정
+******************************************/
+function setForecastGrib( forecastGrib ) {
+var tag = '';
+var weatherClass = '';
+switch ( forecastGrib.WEATHER_ICON ) {
+	case '01' : weatherClass = 'icon1';	//맑음
+				break;
+	case '02' : weatherClass = 'icon4';	//구름조금
+				break;
+	case '03' : weatherClass = 'icon5';	//구름많음
+				break;
+	case '04' : weatherClass = 'icon3';	//흐림
+				break;
+	case '05' : weatherClass = 'icon10';	//비
+				break;
+	case '06' : weatherClass = 'icon14';	//비/눈
+				break;
+	case '07' : weatherClass = 'icon18';	//눈
+				break;
+	default   : weatherClass = 'icon2';	// 기본 icon2
+				break;
+}
+
+// 기상정보 쿠키 세팅
+setCookie("oldWeatherClass", "weather_" + weatherClass, 1); 
+setCookie("oldT1H", Math.round(Number(forecastGrib.T1H)), 1); 
+
+$("div[customAttr='areaWeather']").children(".weather").children("span").eq("0").attr("class", "weather_" + weatherClass);
+$("div[customAttr='areaWeather']").children(".weather").children("span").eq("1").html(Math.round(Number(forecastGrib.T1H)));	// 온도 반올림처리
+}
+
+// dwf.js로 부터 해당 함수 호출 - 이달의 병해충 ajax (예찰요원 메인 화면이 아닌경우에 해당)
+// 이달의병해충 및 기상정보 영역 처리
+function setHeaderRightHtml(areaSucFlag, weatherSucFlag){		// areaSucFlag: 위치정보 조회성공여부, weatherSucFlag: 기상정보 조회성공여부
+
+$.ajax({
+    type:"POST",
+    url:"${pageContext.request.contextPath}/user/main/warning.do",
+    dataType : "json",
+    success: function(data){
+    	$("div[customAttr='spotFore']").show();
+		$("div[customAttr='areaWeather']").show();
+		$("div[customAttr='areaWeather']").children("p").eq("0").html(year + "." + month + "." + day + ".(" + week[new Date().getDay()] + ")");			// 그외 화면 날짜정보
+		if(areaSucFlag = "Y"){
+// 			$("div[customAttr='areaWeather']").children("p").eq("0").removeAttr("style");
+			$("div[customAttr='areaWeather']").children("p").eq("0").css({"color" : "black"});
+			$("div[customAttr='areaWeather']").children("h2").html(address);	// 주소정보 세팅.
+		}else{
+			$("div[customAttr='areaWeather']").children("p").eq("0").css({"color" : "black"});
+			$("div[customAttr='areaWeather']").children("h2").html(" ");		// 빈값 세팅.
+		}
+		
+		if(weatherSucFlag == "N"){
+			$("div[customAttr='areaWeather']").children(".weather").empty();		// 날씨정보 조회 실패시 해당 날씨 영역 제거
+		}
+		
+		if(data.length == 0){
+			$("#indcHeadData").append("이달의 병해충 데이터가 없습니다.");
+		}else{
+			var rsltText = data[0].origFileNm.substring(0, data[0].origFileNm.indexOf("."));
+			$("#indcHeadData").append("<p class=\"forecast\" style=\"color: black;\">이달의 병해충" + data[0].alarmNm + "<strong >(" + data[0].grpNm + ")" + rsltText + "</strong></p>");
+		}
+    },
+    error: function(error) {
+        alert(error);
+    }  
+});
+}
+
+// 예측경보 발생 병해충 ajax (예찰요원 메인 화면에 해당)
+function fncRegionForeHeaderAjax(){
+$.ajax({
+	url:"${pageContext.request.contextPath}/user/main/prediction.do",
+	type: "POST",
+    dataType : "json",
+	success : function(data) {
+		
+		$("div[customAttr='spotFore']").show();
+		$("div[customAttr='areaWeather']").show();
+		var text = "";
+		// 예측경보 발생 병해충 확인 시 주석 제거
+		if(data.length == 0){
+			text += "<h2>";
+			text += "	<strong>";
+			
+				
+				
+					text += "";
+				
+			
+			text += "	</strong>,예측경보 발생 병해충";
+			text += "	</h2>";
+			text += "	<p></p>";
+			text += "	<p class=\"forecast\">예측된 데이터가 없습니다.</p>";
+		}else{
+			text += "<h2>	<strong>" + data[0].areaNm + "</strong>,예측경보 발생 병해충</h2>";
+			text += "	<p style=\"color: black;\"></p>";
+			text += "	<p class=\"forecast\" style=\"color: black;\">" + data[0].dbyhsNm + "[" + data[0].riskLevelNm + "]</p>";
+		}
+
+		$("div[customAttr='spotFore']").append(text);
+
+		$("div[customAttr='spotFore']").children("p").eq("0").html(year + "." + month + "." + day + ".(" + week[new Date().getDay()] + ")");	// 예찰요원 화면 날짜정보
+		
+	},
+	error: function (error) {
+		alert(error);
+	}
+}); 
+}
+</script>
+ 
+<script src="${pageContext.request.contextPath }/js/cropsdoctor/pwa/app.js"></script>
+<%-- <script src="${pageContext.request.contextPath }/js/cropsdoctor/pwa/feed.js"></script> --%>
+
+</html>

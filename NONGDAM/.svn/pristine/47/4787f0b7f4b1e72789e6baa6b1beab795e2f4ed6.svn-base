@@ -1,0 +1,201 @@
+package kr.or.ddit.user.member;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import kr.or.ddit.service.member.IMemberService;
+import kr.or.ddit.service.sensor.ISensorService;
+import kr.or.ddit.service.sfms.ISfmsService;
+import kr.or.ddit.utiles.AES256Util;
+import kr.or.ddit.vo.FarmVO;
+import kr.or.ddit.vo.MemberVO;
+import kr.or.ddit.vo.SensorVO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+@Controller
+@RequestMapping("/user/member")
+public class MemberController {
+	
+	@Autowired
+	private IMemberService service;
+	
+	@Autowired
+	private ISfmsService sfmsservice;
+	
+	@Autowired
+	private ISensorService sensorservice;
+	
+	@RequestMapping("/memberForm")
+	public ModelAndView joinForm(ModelAndView mv){
+		
+		mv.setViewName("user/member/memberForm_mod");
+		
+		return mv;
+	}
+	
+	@RequestMapping("/idCheck")
+	public ModelAndView idCheck(String mber_id,
+								Map<String, String>params,
+								ModelAndView andView) throws Exception{
+		params.put("mber_id", mber_id);
+		
+		MemberVO memberInfo = this.service.memberInfo(params);
+		String result="사용할 수 있는 아이디 입니다.";
+		if(memberInfo != null){
+			result = "중복된 아이디 입니다.";
+		}
+		andView.addObject("result", result);
+		
+		// application-views.xml에 선언된 빈의 id
+		andView.setViewName("jsonConvertView");
+		
+		return andView;
+	}
+	
+	@RequestMapping("/insertMember")
+	public String insertMember(MemberVO memberInfo,
+								RedirectAttributes redirectAttribute,
+								@RequestParam String mber_sfms_id,
+								@RequestParam String farm_crops) throws Exception{
+		
+		AES256Util aes = new AES256Util();
+		//멤버 insert
+		memberInfo.setMber_seed("10000");
+		String mber_pass=memberInfo.getMber_password();
+		
+		String encryptedPw=aes.encrypt(mber_pass);
+		memberInfo.setMber_password(encryptedPw);
+		this.service.insertMemberInfo(memberInfo);
+		
+		
+		//스마트팜 아이디가 존재할때 스마트팜아이디 추가
+		//추가하고 초반 온도 여기서 설정
+		// 설정해주면서 센서도 자동으로 스마트팜 온도와 동일하게 설정하고 insert
+		// 작물 사진 ??.,.
+		if(farm_crops == ""||farm_crops == " "){
+			return "redirect:/join/loginForm.do";
+		}
+		if(mber_sfms_id!=null||mber_sfms_id == ""){
+			
+		FarmVO farmInfo = new FarmVO();
+		farmInfo.setFarm_id(mber_sfms_id);
+		farmInfo.setMber_id(memberInfo.getMber_id());
+		farmInfo.setFarm_adres(memberInfo.getMber_farmng_adres());
+		farmInfo.setFarm_crops(farm_crops);
+		farmInfo.setFarm_co2("21");
+		farmInfo.setFarm_hd("34");
+		farmInfo.setFarm_tmprt("19");
+		farmInfo.setFarm_pblmrl("5");
+		
+		sfmsservice.insertFarm(farmInfo);
+		
+		SensorVO sensorInfo = new SensorVO();
+		sensorInfo.setFarm_id(farmInfo.getFarm_id());
+		sensorInfo.setSensor_tmprt(farmInfo.getFarm_tmprt());
+		sensorInfo.setSensor_hd(farmInfo.getFarm_hd());
+		sensorInfo.setSensor_pblmrl(farmInfo.getFarm_pblmrl());
+		sensorInfo.setSensor_co2(farmInfo.getFarm_co2());
+		
+			sensorservice.inserSensor(sensorInfo);
+			}
+		
+		
+		redirectAttribute.addFlashAttribute("message", "회원 가입이 완료되었습니다");
+		
+		return "redirect:/join/loginForm.do";
+	}
+	
+	@RequestMapping("/proFile/proFile")
+	public ModelAndView proFile(ModelAndView mv)throws Exception{
+		
+		mv.setViewName("user/member/proFile/proFile");
+		return mv;
+	}
+	
+	@RequestMapping("/update")
+	public ModelAndView updatemember(MemberVO memberInfo,
+									 ModelAndView mv,
+									 HttpSession session,
+									 Map<String , String>params)throws Exception{
+		
+		params.put("mber_id", memberInfo.getMber_id());
+		int cnt = service.updateMemberInfo(memberInfo);
+		
+		String result="";
+		if(cnt == 1){
+			result = "회원정보 변경 완료!!";
+		}
+		mv.addObject("result", result);
+		session.removeAttribute("login_mberInfo");
+		memberInfo = service.memberInfo(params);
+		session.setAttribute("login_mberInfo", memberInfo);
+		
+		mv.setViewName("jsonConvertView");
+		return mv;
+	}
+	
+	@RequestMapping("/sfmsIdCheck")
+	public ModelAndView sfmsIdCheck(ModelAndView mv,
+									@RequestParam String mber_sfms_id,
+									Map<String, String>params)throws Exception{
+		String result;
+		mv.setViewName("jsonConvertView");
+		params.put("farm_id", mber_sfms_id);
+		FarmVO farmInfo =  sfmsservice.farmInfo(params);
+		if(farmInfo !=null){
+			result = "이미 등록된 회원 아이디입니다";
+			mv.addObject("result", result);
+			return mv;
+		}
+
+		
+		BufferedReader br = null;
+		String urlstr = "http://www.smartfarmkorea.net/Agree_WS/webservices/ProvideRestService/getIdentityDataList/827586a9169e4fb6a7f50f0563d88aa3";
+		URL url = new URL(urlstr);
+		HttpURLConnection urlconnection = (HttpURLConnection) url.openConnection();
+		urlconnection.setRequestMethod("GET");
+		br= new BufferedReader(new InputStreamReader(urlconnection.getInputStream(),"UTF-8"));
+		
+		String sfmsInfo = br.readLine();
+		JsonParser parser = new JsonParser();
+		JsonArray jsonObj = (JsonArray) parser.parse(sfmsInfo);
+		
+		String farm_adres = null;
+		String farm_crops = null;
+		result = "존재하지 않는 스마트팜 아이디입니다.";
+		
+		for(int i = 0; i <jsonObj.size(); i++){
+			JsonObject obj = (JsonObject) jsonObj.get(i);
+			
+			if(mber_sfms_id.equals(obj.getAsJsonObject().get("userId").getAsString())){
+				farm_adres = obj.getAsJsonObject().get("addressName").getAsString();
+				farm_crops = obj.getAsJsonObject().get("itemCode").getAsString();
+				mv.addObject("farm_crops",farm_crops);
+				mv.addObject("farm_adres", farm_adres);
+				result = "사용 가능한 스마트팜 아이디입니다";
+				mv.addObject("result",result);
+				return mv;
+			}
+		}
+		mv.addObject("result",result);
+		
+		
+		return mv;
+	}
+	
+}

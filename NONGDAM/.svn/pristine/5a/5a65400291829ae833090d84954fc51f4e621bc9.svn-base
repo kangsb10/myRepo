@@ -1,0 +1,574 @@
+package kr.or.ddit.user.community;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import kr.or.ddit.service.community.ICommunityService;
+import kr.or.ddit.utiles.RolePagingUtiles;
+import kr.or.ddit.vo.CommunityVO;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+@RequestMapping("/user/cm/")
+public class CommunityController {
+
+	@Autowired
+	private ICommunityService service;
+
+	// 카페 리스트
+	@RequestMapping("communityList")
+	public ModelAndView communityList(ModelAndView mv,
+										Map<String, String> params,
+										HttpServletRequest request,
+										String search_keyword,
+										String search_keycode) throws Exception {
+
+		String currentPage = request.getParameter("currentPage");
+		if (currentPage == null) {
+			currentPage = "1";
+		}
+		
+		params.put("search_keyword", search_keyword);
+		params.put("search_keycode", search_keycode);
+		int totalCount = service.totalCounts(params);
+		RolePagingUtiles pagingUtiles = new RolePagingUtiles(
+				Integer.parseInt(currentPage), totalCount, request);
+		params.put("startCount", pagingUtiles.getStartCount());
+		params.put("endCount", pagingUtiles.getEndCount());
+		
+		
+		List<CommunityVO> communityList = service.communityList(params);
+		
+		mv.addObject("search_keyword", search_keyword);
+		mv.addObject("search_keycode", search_keycode);
+		mv.addObject("pagingHtmls", pagingUtiles.getPageHtmls());
+		mv.addObject("communityList", communityList);
+		mv.setViewName("user/community/communityList");
+
+		return mv;
+	}
+
+	// 카페개설폼
+	@RequestMapping("communityForm")
+	public ModelAndView communityForm(ModelAndView mv, Map<String, String> params) throws Exception {
+
+		List<CommunityVO> guMN = this.service.guMN(params);
+		mv.addObject("guMN", guMN);
+		mv.setViewName("user/community/communityForm");
+
+		return mv;
+	}
+
+	// 커뮤니티 추가
+	@RequestMapping("cmInsert")
+	public String communityIns(CommunityVO communityInfo,
+			@RequestParam("files") MultipartFile[] items,
+			RedirectAttributes redirectAttribute)
+			throws Exception {
+
+		redirectAttribute.addFlashAttribute("message", "게시물이 등록되었습니다.");
+		service.communityIns(communityInfo, items);
+		service.cafeMberIns(communityInfo);
+		return "redirect:/user/cm/communityList.do";
+
+	}
+
+	// DB데이터 코드 출력
+	@RequestMapping("guList")
+	public ModelAndView guList(String ctgry_mn, ModelAndView mv, Map<String, String> params)
+			throws Exception {
+
+		params.put("ctgry_mn", ctgry_mn);
+		
+		List<CommunityVO> guNM = this.service.guNM(params);
+		mv.setViewName("jsonConvertView");
+		mv.addObject("data", guNM);
+
+		return mv;
+	}
+	
+	// 카페 뷰폼
+	@RequestMapping("cmaddr/{cafe_addr}")
+	public ModelAndView communityInfo(ModelAndView mv,
+									Map<String, String> params,
+									String cmmnty_no,
+									String cafe_mber_id,
+									String bbs_no,
+									String search_keyword,
+									String search_keycode,
+									HttpServletRequest request,
+									@PathVariable("cafe_addr") String cmmnty_cafe_adres)
+									throws Exception {
+		
+		String currentPage = request.getParameter("currentPage");
+		if (currentPage == null) {
+			currentPage = "1";
+		}
+		
+		params.put("search_keyword", search_keyword);
+		params.put("search_keycode", search_keycode);
+		params.put("cmmnty_cafe_adres", cmmnty_cafe_adres);
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("cmmnty_no", cmmnty_no);
+		params.put("bbs_no", bbs_no);
+		int totalCount = service.totalCount(params);
+		RolePagingUtiles pagingUtiles = new RolePagingUtiles(
+				Integer.parseInt(currentPage), totalCount, request);
+		params.put("startCount", pagingUtiles.getStartCount());
+		params.put("endCount", pagingUtiles.getEndCount());
+		CommunityVO communityInfo = service.communityInfo(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		CommunityVO boardInfo = service.boardInfo(params);
+		
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		
+		List<CommunityVO> cafeSelList = service.cafeSelList(params);
+		
+		mv.addObject("search_keyword", search_keyword);
+		mv.addObject("search_keycode", search_keycode);
+		mv.addObject("pagingHtmls", pagingUtiles.getPageHtmls());
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("boardInfo", boardInfo);
+		mv.addObject("cafeSelList", cafeSelList);
+		mv.addObject("cafeBoList", cafeBoList);
+		mv.addObject("communityInfo", communityInfo);
+		mv.setViewName("user/community/cafe/cafe_main");
+		
+		
+		return mv;
+
+	}
+	
+	// 카페 회원가입창
+	@RequestMapping("cafeMberForm")
+	public ModelAndView cafeMberForm(String cmmnty_no,String cafe_mber_id,ModelAndView mv,
+									Map<String, String> params) throws Exception{
+		params.put("cmmnty_no", cmmnty_no);
+		
+		CommunityVO communityInfo = service.communityInfo(params);
+		
+		mv.addObject("communityInfo", communityInfo);
+		mv.setViewName("user/community/cafe/cafe_memberForm");
+		
+		return mv;
+		
+	}
+
+	// 카페 회원가입
+	@RequestMapping("cafeMberIns")
+	public String cafeMberIns(String cmmnty_cafe_adres,
+			String cmmnty_no,
+			String cafe_mber_id,
+			CommunityVO communityInfo) throws Exception{
+		
+		service.cafeMberIns(communityInfo);
+		
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres + ".do?cmmnty_no=" + cmmnty_no + "&cafe_mber_id=" + cafe_mber_id;
+	}
+	
+	// 카페 별명체크
+	@RequestMapping("cafenameCheck")
+	public ModelAndView cafenameCheck(String cafe_mber_ncnm,String cmmnty_no,
+										ModelAndView mv, Map<String, String> params) throws Exception{
+		
+		params.put("cafe_mber_ncnm", cafe_mber_ncnm);
+		params.put("cmmnty_no", cmmnty_no);
+		
+		CommunityVO communityInfo = service.cafeNameCheck(params);
+		
+		String data = "사용할 수 있는 별명 입니다.";
+		if(communityInfo != null){
+			data = "중복된 별명 입니다.";
+		}
+		
+		mv.addObject("data", data);
+		mv.setViewName("jsonConvertView");
+		
+		return mv;
+	}
+	
+	// 카페 게시판 추가폼
+	@RequestMapping("cafeBoardForm")
+	public ModelAndView cafeBoardIns(String cmmnty_no,ModelAndView mv,Map<String,String> params) throws Exception{
+		params.put("cmmnty_no", cmmnty_no);
+		
+		CommunityVO communityInfo = service.communityInfo(params);
+		
+		mv.addObject("communityInfo", communityInfo);
+		
+		mv.setViewName("user/community/cafe/cafe_boardForm");
+		return mv;
+	}
+	
+	// 카페 게시판 추가
+	@RequestMapping("cafeBoardIns")
+	public String cafeBoardIns(String cmmnty_cafe_adres,String cmmnty_no,CommunityVO communityInfo,String cafe_mber_id)
+			throws Exception {
+
+		service.cafeBoardIns(communityInfo);
+
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres + ".do?cmmnty_no=" + cmmnty_no + "&cafe_mber_id=" + cafe_mber_id;
+
+	}
+	
+	// 카페 게시판 삭제
+	@RequestMapping("deleteCafebo")
+	public String deleteCafebo(@RequestParam String bbs_creat_no, 
+								Map<String,String> params,
+								String cmmnty_cafe_adres,
+								String cmmnty_no,
+								String cafe_mber_id)
+			throws Exception {
+		
+		params.put("bbs_creat_no", bbs_creat_no);
+		
+		service.deletecafeboInfo(params);
+		
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres + ".do?cmmnty_no=" + cmmnty_no + "&cafe_mber_id=" + cafe_mber_id;
+		
+	}
+	
+	// 카페 게시판별 글출력
+	@RequestMapping("cmaddr/{cafe_addr}/cafeSelList")
+	public ModelAndView cafeBoList(@RequestParam String bbs_creat_no
+								,@PathVariable("cafe_addr") String cmmnty_cafe_adres
+								,String cmmnty_no
+								,String cafe_mber_id
+								,String bbs_no
+								,String search_keyword
+								,String search_keycode
+								,HttpServletRequest request
+								,ModelAndView mv, Map<String,String> params)
+		throws Exception{
+		
+		String currentPage = request.getParameter("currentPage");
+		if (currentPage == null) {
+			currentPage = "1";
+		}
+		
+		params.put("search_keyword", search_keyword);
+		params.put("search_keycode", search_keycode);
+		params.put("cmmnty_cafe_adres", cmmnty_cafe_adres);
+		params.put("cmmnty_no", cmmnty_no);
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("bbs_no", bbs_no);
+		params.put("bbs_creat_no", bbs_creat_no);
+		int totalCount = service.totalCount(params);
+		RolePagingUtiles pagingUtiles = new RolePagingUtiles(
+				Integer.parseInt(currentPage), totalCount, request);
+		params.put("startCount", pagingUtiles.getStartCount());
+		params.put("endCount", pagingUtiles.getEndCount());
+		
+		CommunityVO communityInfo = service.communityInfo(params);
+		
+		CommunityVO boardInfo = service.boardInfo(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		
+		List<CommunityVO> cafeSelList = service.cafeSelList(params);
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		
+		
+		mv.addObject("pagingHtmls", pagingUtiles.getPageHtmls());
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("boardInfo", boardInfo);
+		mv.addObject("cafeBoList", cafeBoList);
+		mv.addObject("communityInfo", communityInfo);
+		mv.addObject("cafeSelList", cafeSelList);
+		mv.setViewName("user/community/cafe/cafe_main");
+		
+		return mv;
+	}
+	
+	// 게시판 글 작성폼
+	@RequestMapping("cafeNewboardForm")
+	public ModelAndView cafeNewboadrIns(String cmmnty_no,String cafe_mber_id,
+							ModelAndView mv,
+							String bbs_creat_no,
+							Map<String,String> params) throws Exception{
+		
+		params.put("cmmnty_no", cmmnty_no);
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("bbs_creat_no", bbs_creat_no);
+		
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		CommunityVO communityInfo = service.communityInfo(params);
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		CommunityVO cafeInfo = service.boardInfo(params);
+		
+		
+		
+		mv.addObject("cafeInfo",cafeInfo);
+		mv.addObject("cafeBoList",cafeBoList);
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("communityInfo", communityInfo);
+		mv.setViewName("user/community/cafe/cafe_boardInsForm");
+		
+		return mv;
+	}
+	
+	// 게시판 새글 등록
+	@RequestMapping("insertCafeBoard")
+	public String insertCafeBoard(
+			CommunityVO communityInfo,
+			@RequestParam("files") MultipartFile[] items,
+			RedirectAttributes redirectAttribute,
+			String cmmnty_cafe_adres,
+			String bbs_creat_no,
+			String cafe_mber_id,
+			String cmmnty_no) throws Exception {
+		
+		service.insertCafeBoardInfo(communityInfo, items);
+
+		redirectAttribute.addFlashAttribute("message", "게시물이 등록되었습니다.");
+
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres +"/cafeSelList.do?cmmnty_no=" + cmmnty_no + "&bbs_creat_no=" + bbs_creat_no + "&cafe_mber_id=" + cafe_mber_id;
+	}
+	
+	// 글 뷰
+	@RequestMapping("cafeListView")
+	public ModelAndView cafeBoardView(ModelAndView mv,
+									@RequestParam String bbs_no,
+									String cmmnty_no,
+									String bbs_creat_no,
+									String cafe_mber_id,
+									String search_keyword,
+									String search_keycode,
+									HttpServletRequest request,
+									Map<String,String> params) throws Exception{
+		
+		String currentPage = request.getParameter("currentPage");
+		if (currentPage == null) {
+			currentPage = "1";
+		}
+		
+		params.put("search_keyword", search_keyword);
+		params.put("search_keycode", search_keycode);
+		params.put("bbs_no", bbs_no);
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("cmmnty_no", cmmnty_no);
+		CommunityVO cafeListInfo = service.boardListInfo(params);
+		params.put("bbs_creat_no", cafeListInfo.getBbs_creat_no());
+		int totalCount = service.totalCount(params);
+		RolePagingUtiles pagingUtiles = new RolePagingUtiles(
+				Integer.parseInt(currentPage), totalCount, request);
+		params.put("startCount", pagingUtiles.getStartCount());
+		params.put("endCount", pagingUtiles.getEndCount());
+		
+		CommunityVO boardInfo = service.boardInfo(params);
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		CommunityVO communityInfo = service.communityInfo(params);
+		
+		
+		mv.addObject("pagingHtmls", pagingUtiles.getPageHtmls());
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("boardInfo", boardInfo);
+		mv.addObject("cafeBoList", cafeBoList);
+		mv.addObject("communityInfo", communityInfo);
+		mv.addObject("cafeListInfo", cafeListInfo);
+		mv.setViewName("user/community/cafe/cafe_boardView");
+		
+		
+		return mv;
+	}
+	
+	// 게시판 글 삭제
+	@RequestMapping("BoardDel")
+	public String BoardDel(@RequestParam String bbs_no,
+							String cmmnty_no,
+							String bbs_creat_no,
+							String cmmnty_cafe_adres,
+							Map<String,String> params) throws Exception{
+		
+		params.put("bbs_no", bbs_no);
+		
+		service.deleteboardInfo(params);
+		
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres +"/cafeSelList.do?cmmnty_no=" + cmmnty_no + "&bbs_creat_no=" + bbs_creat_no;
+	}
+	
+	// 카페 삭제
+	@RequestMapping("deleteCafe")
+	public String deleteCafe(@RequestParam String cmmnty_no,
+			Map<String,String> params) throws Exception{
+		
+		params.put("cmmnty_no", cmmnty_no);
+		
+		service.deletecafeInfo(params);
+		
+		return "redirect:/user/cm/communityList.do";
+	}
+	
+	
+	
+	// 카페 수정폼
+	@RequestMapping("updateCafeForm")
+	public ModelAndView updateCafeForm(@RequestParam String cmmnty_no,
+			Map<String, String> params,
+			ModelAndView mv) throws Exception{
+
+		params.put("cmmnty_no", cmmnty_no);
+		
+		CommunityVO communityInfo = service.communityInfo(params);
+		List<CommunityVO> guMN = this.service.guMN(params);
+		
+		mv.addObject("communityInfo", communityInfo);
+		mv.addObject("guMN", guMN);
+		mv.setViewName("user/community/communityUpdForm");
+		
+		return mv;
+	}
+	
+	// 카페 수정
+	@RequestMapping("updateCafe")
+	public String updateCafe(CommunityVO communityInfo, String cafe_mber_id) throws Exception{
+		
+		service.updatecafeInfo(communityInfo);
+		System.out.println(communityInfo.getMber_id());
+		//localhost/user/cm/cmaddr/null.do?cmmnty_no=21&cafe_mber_id=a001
+		
+		return "redirect:/user/cm/cmaddr/" + communityInfo.getCmmnty_cafe_adres() +".do?cmmnty_no=" + communityInfo.getCmmnty_no() + "&cafe_mber_id=" + communityInfo.getMber_id();
+//		return "redirect:/user/cm/communityList.do";
+	}
+	
+	// 게시판 수정폼
+	@RequestMapping("updateCafeboForm")
+	public ModelAndView updateCafebo(String cmmnty_no,
+			String cafe_mber_id,
+			String bbs_creat_no,
+			Map<String, String> params,
+			ModelAndView mv) throws Exception{
+		
+		params.put("cmmnty_no", cmmnty_no);
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("bbs_creat_no", bbs_creat_no);
+		
+		CommunityVO boardInfo = service.boardInfo(params);
+		CommunityVO communityInfo = service.communityInfo(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		
+		mv.addObject("boardInfo", boardInfo);
+		mv.addObject("cafeBoList", cafeBoList);
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("communityInfo", communityInfo);
+		mv.setViewName("user/community/cafe/updateboardForm");
+		
+		
+		return mv;
+	}
+	
+	// 게시판 수정
+	@RequestMapping("updateCafebo")
+	public String updateCafebo(String cmmnty_cafe_adres,
+			String bbs_creat_no,
+			String cmmnty_no,
+			String cafe_mber_id,
+			CommunityVO communityInfo) throws Exception{
+		
+//		params.put("bbs_no", bbs_no);
+		service.updatecafeboInfo(communityInfo);
+//		service.deletecafeInfo(params);
+		
+		return "redirect:/user/cm/cmaddr/"+ cmmnty_cafe_adres +"/cafeSelList.do?bbs_creat_no=" 
+						+ bbs_creat_no +"&cmmnty_no="+ cmmnty_no +"&cafe_mber_id=" + cafe_mber_id;
+	}
+	
+	// 카페 별명 변경
+	@RequestMapping("updateCafeNCNMForm")
+	public ModelAndView updateCafeNCNM(ModelAndView mv,
+										String cmmnty_no,
+										String cafe_mber_id,
+										Map<String,String> params
+										) throws Exception{
+		
+		params.put("cmmnty_no", cmmnty_no);
+		params.put("cafe_mber_id", cafe_mber_id);
+		
+		CommunityVO communityInfo = service.communityInfo(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		
+		mv.addObject("communityInfo", communityInfo);
+		mv.addObject("cafeName", cafeName);
+		
+		mv.setViewName("user/community/cafe/cafe_memberUpdateForm");
+		
+		
+		return mv;
+	
+	}
+	
+	// 카페 별명 변경
+	@RequestMapping("updateCafeNCNM")
+	public String updateCafeNCNM(String cmmnty_no,
+									String cmmnty_cafe_adres,
+									CommunityVO communityInfo,
+									String cafe_mber_id) throws Exception{
+		service.updatecafeNCNMInfo(communityInfo);
+		
+		
+		return "redirect:/user/cm/cmaddr/" + cmmnty_cafe_adres + ".do?cmmnty_no="
+								+ cmmnty_no + "&cafe_mber_id=" + cafe_mber_id;
+		
+	}
+	
+	// 글 수정폼
+	@RequestMapping("updateGleForm")
+	public ModelAndView updateGle(ModelAndView mv,
+									String bbs_no,
+									String cmmnty_no,
+									String bbs_creat_no,
+									String cafe_mber_id,
+									Map<String,String> params) throws Exception{
+		
+		
+		params.put("cafe_mber_id", cafe_mber_id);
+		params.put("bbs_no", bbs_no);
+		params.put("bbs_creat_no", bbs_creat_no);
+		params.put("cmmnty_no", cmmnty_no);
+		
+		CommunityVO cafeListInfo = service.boardListInfo(params);
+		CommunityVO communityInfo = service.communityInfo(params);
+		CommunityVO cafeInfo = service.boardInfo(params);
+		List<CommunityVO> cafeBoList = service.cafeBoList(params);
+		CommunityVO cafeName = service.cafeNameCheck(params);
+		
+		mv.addObject("cafeName", cafeName);
+		mv.addObject("cafeBoList", cafeBoList);
+		mv.addObject("cafeInfo", cafeInfo);
+		mv.addObject("communityInfo", communityInfo);
+		mv.addObject("cafeListInfo", cafeListInfo);
+		mv.setViewName("user/community/cafe/cafe_boardupdateForm");
+		
+		return mv;
+		
+	}
+	
+	// 글 수정
+	@RequestMapping("updateGle")
+	public String updateGle(CommunityVO communityInfo,
+								String cafe_mber_id,
+								String cmmnty_no,
+								String bbs_no,
+								String bbs_creat_no) throws Exception{
+		
+		service.updateboardInfo(communityInfo);
+		
+		
+		return "redirect:/user/cm/cafeListView.do?cafe_mber_id=" + cafe_mber_id + "&bbs_creat_no=" +  
+						bbs_creat_no + "&cmmnty_no=" + cmmnty_no + "&bbs_no=" + bbs_no;
+		
+	}
+	
+	
+}

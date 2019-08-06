@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="farmingdiary">
+   <typeAlias alias="farmingdiaryVO" type="kr.or.ddit.vo.FarmingDiaryVO"></typeAlias>
+   
+    <resultMap class="farmingdiaryVO" id="farmingdiaryMap">
+      <result property="farm_diary_no" column="farm_diary_no"/>
+      <result property="mber_id" column="mber_id"/>
+      <result property="mber_ncnm" column="mber_ncnm"/>
+      <result property="farm_diary_sj" column="farm_diary_sj"/>
+      <result property="farm_diary_input_de" column="farm_diary_input_de"/>
+      <result property="farm_diary_wethr" column="farm_diary_wethr"/>
+      <result property="farm_diary_crops_knd" column="farm_diary_crops_knd"/>
+      <result property="farm_diary_make_co" column="farm_diary_make_co"/>
+      <result property="farm_diary_opert_cn" column="farm_diary_opert_cn"/>
+      <result property="farm_diary_tomo_fx" column="farm_diary_tomo_fx"/>
+      <result property="farm_diary_sfms_emrgncy_cn" column="farm_diary_sfms_emrgncy_cn"/>
+      <result property="farm_diary_dgnss" column="farm_diary_dgnss"/>
+      <result property="farm_diary_delete" column="farm_diary_delete"/>
+      
+      <result property="items" column="farm_diary_no" select="farmingfileitem.farmingFileItemList"/>
+   </resultMap>
+   
+   <sql id="selectAll">
+      SELECT *
+         FROM FARMING_DIARY
+         WHERE FARM_DIARY_DELETE = 'n'
+   </sql>
+   
+   
+   
+   <sql id="searchCondition">
+   		<dynamic prepend="AND">
+    			<isNotEmpty property="search_keyword" open="(" close=")">
+    				<isEqual property="search_keycode" compareValue="TOTAL">
+    					 FARM_DIARY_SJ LIKE '%'||#search_keyword#||'%' 
+    					    OR MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    					    
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="TITLE">
+    					 FARM_DIARY_SJ LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="WRITER">
+    					 MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    			</isNotEmpty>
+    		</dynamic>
+   </sql>
+   
+   <select id="farmingDiaryInfo" parameterClass="map" resultMap="farmingdiaryMap">
+      <include refid="selectAll"/>
+         AND FARM_DIARY_NO = #farm_diary_no#
+   </select>
+   
+<!--    <select id="upCultivationmethodInfo" parameterClass="map" resultMap="cultivationmethodMap"> -->
+<!--       <include refid="selectAll"/> -->
+<!--          AND ctvt_mth_no = #ctvt_mth_no# -->
+<!--    </select> -->
+   
+   <select id="farmingDiaryList"  parameterClass="map" resultClass="farmingdiaryVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    
+	    		<include refid="searchCondition"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+   <insert id="insertFarmingDiary" parameterClass="farmingdiaryVO">
+      <selectKey keyProperty="farm_diary_no" resultClass="string">
+         SELECT FARMING_DIARY_SEQ.NEXTVAL
+            FROM DUAL
+      </selectKey>
+      
+      INSERT INTO FARMING_DIARY(FARM_DIARY_NO
+			                        ,MBER_ID
+			                        ,MBER_NCNM
+			                        ,FARM_DIARY_SJ
+			                        ,FARM_DIARY_WETHR
+			                        ,FARM_DIARY_CROPS_KND
+			                        ,FARM_DIARY_MAKE_CO
+			                        ,FARM_DIARY_OPERT_CN
+			                        ,FARM_DIARY_TOMO_FX
+			                        ,FARM_DIARY_SFMS_EMRGNCY_CN
+			                        ,FARM_DIARY_DGNSS
+			                       	)
+		                     VALUES(#farm_diary_no#
+			                        ,#mber_id#
+			                        ,#mber_ncnm#
+			                        ,#farm_diary_sj#
+			                        ,#farm_diary_wethr#
+			                        ,#farm_diary_crops_knd#
+			                        ,#farm_diary_make_co#
+			                        ,#farm_diary_opert_cn#
+			                        ,#farm_diary_tomo_fx#
+			                        ,#farm_diary_sfms_emrgncy_cn#
+			                        ,#farm_diary_dgnss#
+			                        )
+   </insert>
+   
+   <update id="deleteFarmingDiary" parameterClass="map" >
+   			UPDATE FARMING_DIARY 
+   			SET FARM_DIARY_DELETE = 'y'
+   			WHERE FARM_DIARY_NO = #farm_diary_no# 
+   </update>
+   
+   <update id="updateFarmingDiary" parameterClass="farmingdiaryVO">
+   			UPDATE FARMING_DIARY 
+   			SET   MBER_ID = #mber_id#
+   				 ,MBER_NCNM = #mber_ncnm#
+   				 ,FARM_DIARY_SJ = #farm_diary_sj#
+                 ,FARM_DIARY_WETHR = #farm_diary_wethr#
+                 ,FARM_DIARY_CROPS_KND = #farm_diary_crops_knd#
+                 ,FARM_DIARY_MAKE_CO = #farm_diary_make_co#
+                 ,FARM_DIARY_OPERT_CN = #farm_diary_opert_cn#
+                 ,FARM_DIARY_TOMO_FX = #farm_diary_tomo_fx#
+                 ,FARM_DIARY_SFMS_EMRGNCY_CN = #farm_diary_sfms_emrgncy_cn#
+                 ,FARM_DIARY_DGNSS = #farm_diary_dgnss#
+            WHERE FARM_DIARY_NO = #farm_diary_no#
+   </update>
+   
+<!--    <update id="updateHit" parameterClass="map"> -->
+<!--        UPDATE FARMING_DIARY  -->
+<!--       SET CTVT_MTH_HIT = ctvt_mth_hit + 1 -->
+<!--       WHERE CTVT_MTH_NO = #ctvt_mth_no# -->
+<!--     </update> -->
+   
+   <!-- 댓글 쿼리 -->
+<!--    <select id="incrementSeq" parameterClass="freeboardVO" resultClass="string"> -->
+<!--    			 SELECT MAX(BO_SEQ) + 1  -->
+<!--    			 FROM 	FREEBOARD  -->
+<!--    			 WHERE 	BO_GROUP = #bo_group#   -->
+<!--    </select> -->
+   
+<!--    <update id="updateSeq"  parameterClass="freeboardVO" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			   SET BO_SEQ = BO_SEQ + 1  -->
+<!--    			 WHERE BO_GROUP = #bo_group#  -->
+<!--    			<![CDATA[ -->
+<!--    			   AND BO_SEQ 	> #bo_seq#  -->
+<!--    			]]>  -->
+   
+<!--    </update> -->
+   
+<!--    <insert id="insertFreeboardReply" parameterClass="freeboardVO"> -->
+<!--    	  <selectKey keyProperty="bo_no" resultClass="string"> -->
+<!--           SELECT FREEBOARD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO FREEBOARD(BO_NO -->
+<!--                         ,BO_TITLE -->
+<!--                         ,BO_WRITER -->
+<!--                         ,BO_NICKNAME -->
+<!--                         ,BO_PWD -->
+<!--                         ,BO_MAIL -->
+<!--                         ,BO_IP -->
+<!--                         ,BO_CONTENT -->
+<!--                         ,BO_GROUP -->
+<!--                         ,BO_SEQ -->
+<!--                         ,BO_DEPTH) -->
+<!--                      VALUES(#bo_no# -->
+<!--                         ,#bo_title# -->
+<!--                         ,#bo_writer# -->
+<!--                         ,#bo_nickname# -->
+<!--                         ,#bo_pwd# -->
+<!--                         ,#bo_mail# -->
+<!--                         ,#bo_ip# -->
+<!--                         ,#bo_content# -->
+<!--                         ,#bo_group# -->
+<!--                         ,#bo_seq# -->
+<!--                         ,#bo_depth#) -->
+   				   
+<!--    </insert> -->
+   <!-- 댓글 쿼리 끝 -->
+   
+   <!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(FARM_DIARY_NO)
+   			  FROM FARMING_DIARY
+   			  WHERE FARM_DIARY_DELETE = 'n'
+   			 <include refid="searchCondition"/> 
+   			  
+   </select>
+   
+   <select id="sfmsInfo" parameterClass="map" resultClass="farmingdiaryVO">
+   SELECT * FROM FARMING_DIARY WHERE MBER_ID = #mber_id#
+   							   AND FARM_DIARY_INPUT_DE LIKE SYSDATE 
+   							   AND ROWNUM ='1' order by FARM_DIARY_NO DESC
+   </select>
+   
+   
+   <update id="updateFarmingDiarySfms" parameterClass="farmingdiaryVO">
+   	UPDATE FARMING_DIARY
+   		SET FARM_DIARY_SFMS_EMRGNCY_CN = #farm_diary_sfms_emrgncy_cn#
+   	WHERE FARM_DIARY_NO = #farm_diary_no#
+   </update>
+</sqlMap>    
+
+
+
+
+
+
+
+

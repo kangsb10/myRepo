@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="member">
+	
+	<typeAlias alias="memberVO" type="kr.or.ddit.vo.MemberVO"/>
+	<typeAlias alias="adminVO" type="kr.or.ddit.vo.AdminVO"/>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM MEMBER
+		  WHERE MBER_DELETE = 'n'
+	</sql>
+	
+	<sql id="searchCondition">
+		<dynamic prepend="AND">
+  	  			<isNotEmpty property="search_keyword" open="(" close=")">
+  	  				<isEqual property="search_keycode" compareValue="TOTAL">
+		  	  				MBER_ID LIKE '%' || #search_keyword# ||'%'
+		  	  			OR  MBER_NM LIKE '%'||#search_keyword# ||'%'
+		  	  			OR  MBER_NCNM LIKE '%'||#search_keyword# ||'%'
+  	  				</isEqual>
+  	  				<isEqual property="search_keycode" compareValue="ID">
+		  	  				MBER_ID LIKE '%' || #search_keyword# ||'%'
+  	  				</isEqual>
+  	  				<isEqual property="search_keycode" compareValue="NAME">
+		  	  				MBER_NM LIKE '%' || #search_keyword# ||'%'
+  	  				</isEqual>
+  	  				<isEqual property="search_keycode" compareValue="NICKNAME">
+		  	  				MBER_NCNM LIKE '%' || #search_keyword# ||'%'
+  	  				</isEqual>
+  	  			</isNotEmpty>
+  	  		</dynamic>
+	</sql>
+	
+	<select id="memberList" resultClass="memberVO" parameterClass="map">
+		SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    		<include refid="searchCondition"/> 
+	    		)A) B 
+	    <![CDATA[
+ 		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount#  
+   		]]> 
+	    ORDER BY RNUM DESC 
+	</select>
+
+	
+	<select id="memberInfo" parameterClass="map" resultClass="memberVO">
+		<include refid="selectAll"/>
+		 AND MBER_ID = #mber_id#
+		 <dynamic prepend="AND">
+		 	<isNotEmpty property="mber_password">
+		 		MBER_PASSWORD = #mber_password#
+		 	</isNotEmpty>
+		 </dynamic>
+	</select>
+	
+	<select id="adminInfo" parameterClass="map" resultClass="adminVO">
+		SELECT * FROM MANAGER
+		WHERE MNGR_ID=#mngr_id#
+		AND MNGR_PASSWORD = #mngr_password#
+	</select>
+	
+	<insert id="insertMember" parameterClass="memberVO">
+		INSERT INTO MEMBER(MBER_ID, MBER_PASSWORD, MBER_MBTLNUM, MBER_NM, MBER_EMAIL, MBER_ZIP, MBER_BASS_ADRES, MBER_DETAIL_ADRES, MBER_NCNM, MBER_FARMNG_ADRES, MBER_SEED,MBER_DELETE)
+					VALUES(#mber_id#, #mber_password#, #mber_mbtlnum#, #mber_nm#, #mber_email#, #mber_zip#, #mber_bass_adres#, 
+							#mber_detail_adres#, #mber_ncnm#, #mber_farmng_adres#, #mber_seed#,'n')
+	</insert>
+	
+	<select id="findMemId" parameterClass="memberVO" resultClass="memberVO">
+		<include refid="selectAll"/>
+			WHERE MBER_NM = #mber_nm#
+			AND MBER_MBTLNUM = #mber_mbtlnum#
+	</select>
+	<select id="findMemPwd" parameterClass="memberVO" resultClass="memberVO">
+		<include refid="selectAll"/>
+			WHERE MBER_ID = #mber_id#
+			AND MBER_MBTLNUM = #mber_mbtlnum#
+	</select>
+	
+	<update id="pwdChange" parameterClass="memberVO">
+		UPDATE MEMBER
+		   SET MBER_PASSWORD =#mber_password#
+		 WHERE MBER_ID = #mber_id#
+	</update>
+	
+	<update id="updateMember" parameterClass="memberVO">
+		UPDATE MEMBER
+		   SET 
+			<isNotEmpty property="mber_password">
+		 		MBER_PASSWORD = #mber_password#
+			</isNotEmpty>
+			<isNotEmpty property="mber_mbtlnum">
+		 		MBER_MBTLNUM = #mber_mbtlnum#
+			</isNotEmpty>
+			<isNotEmpty property="mber_email">
+		 		MBER_EMAIL = #mber_email#
+			</isNotEmpty>
+			<isNotEmpty property="mber_ncnm">
+		 		MBER_NCNM = #mber_ncnm#
+			</isNotEmpty>
+			<isNotEmpty property="mber_zip">
+		 		MBER_ZIP = #mber_zip#,
+		 		MBER_BASS_ADRES = #mber_bass_adres#
+			</isNotEmpty>
+			<isNotEmpty property="mber_detail_adres" prepend=",">
+		 		MBER_DETAIL_ADRES = #mber_detail_adres#
+			</isNotEmpty>
+			<isNotEmpty property="mber_farmng_adres">
+		 		MBER_FARMNG_ADRES = #mber_farmng_adres#
+			</isNotEmpty>
+			<isNotEmpty property="mber_seed">
+		 		MBER_SEED = #mber_seed#
+			</isNotEmpty>
+		 WHERE MBER_ID = #mber_id#
+	</update>
+	
+	<update id="adminupdateMember" parameterClass="memberVO">
+		UPDATE MEMBER
+		   SET MBER_SEED = #mber_seed#,
+		   	   MBER_NCNM = #mber_ncnm#
+		 WHERE MBER_ID = #mber_id# 
+	</update>
+	 <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(mber_id)
+   			  FROM MEMBER 
+   			  WHERE MBER_DELETE = 'n'
+   			 <include refid="searchCondition"/>
+   </select>
+</sqlMap>    

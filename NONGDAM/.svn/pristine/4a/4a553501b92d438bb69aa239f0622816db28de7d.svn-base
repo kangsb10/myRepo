@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="sensor">
+   <typeAlias alias="sensorVO" type="kr.or.ddit.vo.SensorVO"/>
+   	
+   	<resultMap class="sensorVO" id="sensorMap">
+      <result property="sensor_no" column="sensor_no"/>
+      <result property="sensor_tmprt" column="sensor_tmprt"/>
+      <result property="sensor_hd" column="sensor_hd"/>
+      <result property="sensor_pblmrl" column="sensor_pblmrl"/>
+      <result property="sensor_co2" column="sensor_co2"/>
+      <result property="sensor_ulfptc" column="sensor_ulfptc"/>
+      <result property="farm_id" column="farm_id"/>
+      
+      <result property="items" column="farm_id" select="sensorfileitem.sensorFileItemList"/>
+   </resultMap>
+   	
+   	
+   	<select id="sensorInfo" parameterClass="map" resultMap="sensorMap">
+   		SELECT * FROM (SELECT * FROM SENSOR WHERE FARM_ID= #farm_id# order by SENSOR_NO DESC) WHERE ROWNUM = '1'
+<!--    		SELECT * FROM SENSOR WHERE FARM_ID= #farm_id#  -->
+   	</select>
+   	
+   	<insert id="insertsensor" parameterClass="sensorVO">
+   		<selectKey keyProperty="sensor_no" resultClass="string"> 
+	   		SELECT SENSOR_SEQ.NEXTVAL
+	   			FROM DUAL
+	   	</selectKey>
+   		
+   		INSERT INTO SENSOR(SENSOR_NO,
+						   SENSOR_TMPRT,
+						   SENSOR_HD,
+						   SENSOR_PBLMRL,
+						   SENSOR_CO2,
+						   FARM_ID)
+					VALUES(#sensor_no#,
+						   #sensor_tmprt#,
+						   #sensor_hd#,
+						   #sensor_pblmrl#,
+						   #sensor_co2#,
+						   #farm_id#)
+   	</insert>
+   	
+   	<update id="sensor.updateSensor" parameterClass="sensorVO">
+   		UPDATE SENSOR 
+   		SET
+   			<isNotEmpty property="sensor_tmprt">
+			 		SENSOR_TMPRT = #sensor_tmprt#
+				</isNotEmpty>
+   				<isNotEmpty property="sensor_hd">
+			 		SENSOR_HD = #sensor_hd#
+				</isNotEmpty>
+   				<isNotEmpty property="sensor_pblmrl">
+			 		SENSOR_PBLMRL = #sensor_pblmrl#
+				</isNotEmpty>
+   				<isNotEmpty property="sensor_co2">
+			 		SENSOR_CO2 = #sensor_co2#
+				</isNotEmpty>
+				WHERE SENSOR_NO = #sensor_no#
+   	</update>
+   		
+   	<delete id="deleteSensor" parameterClass="map">
+   			DELETE FROM SENSOR WHERE FARM_ID = #farm_id#
+   	</delete>
+   	
+<!--     <resultMap class="noticeVO" id="noticeMap"> -->
+<!--       <result property="notice_no" column="notice_no"/> -->
+<!--       <result property="mngr_id" column="mngr_id"/> -->
+<!--       <result property="notice_sj" column="notice_sj"/> -->
+<!--       <result property="notice_cn" column="notice_cn"/> -->
+<!--       <result property="notice_input_de" column="notice_input_de"/> -->
+<!--       <result property="notice_delete" column="notice_delete"/> -->
+<!--       <result property="notice_hit" column="notice_hit"/> -->
+      
+<!--       <result property="items" column="notice_no" select="noticefileitem.noticeFileItemList"/> -->
+<!--    </resultMap> -->
+   
+<!--    <sql id="selectAll"> -->
+<!--       SELECT * -->
+<!--          FROM notice -->
+<!-- 		 WHERE NOTICE_DELETE = 'n' -->
+<!--    </sql> -->
+   
+<!--    <sql id="searchCondition"> -->
+<!--    		<dynamic prepend="AND"> -->
+<!--     			<isNotEmpty property="search_keyword" open="(" close=")"> -->
+<!--     				<isEqual property="search_keycode" compareValue="TOTAL"> -->
+<!--     					 NOTICE_SJ LIKE '%'||#search_keyword#||'%'  -->
+<!--     					    OR NOTICE_CN LIKE '%'||#search_keyword#||'%'  -->
+<!--     				</isEqual> -->
+<!--     				<isEqual property="search_keycode" compareValue="TITLE"> -->
+<!--     					 NOTICE_SJ LIKE '%'||#search_keyword#||'%'  -->
+<!--     				</isEqual> -->
+<!--     				<isEqual property="search_keycode" compareValue="CONTENT"> -->
+<!--     					 NOTICE_CN LIKE '%'||#search_keyword#||'%'  -->
+<!--     				</isEqual> -->
+<!--     			</isNotEmpty> -->
+<!--     		</dynamic> -->
+<!--    </sql> -->
+   
+<!--    <select id="noticeInfo" parameterClass="map" resultMap="noticeMap"> -->
+<!--       <include refid="selectAll"/> -->
+<!--          AND NOTICE_NO = #notice_no# -->
+<!--    </select> -->
+   
+<!--    <select id="noticeList"  parameterClass="map" resultClass="noticeVO"> -->
+<!--    	   SELECT B.* -->
+<!-- 	   FROM (SELECT ROWNUM RNUM , A.* -->
+<!-- 	    FROM (  <include refid="selectAll"/>  -->
+	    
+<!-- 	    		)A) B  -->
+<!-- 	    <![CDATA[ -->
+<!-- 		    WHERE B.RNUM <= #startCount#  -->
+<!-- 		      AND B.RNUM >= #endCount#  -->
+<!--    		]]> -->
+<!-- 	    ORDER BY RNUM DESC  -->
+<!--    </select> -->
+<!--    <insert id="insertNotice" parameterClass="noticeVO"> -->
+<!--    	<selectKey keyProperty="notice_no" resultClass="string"> -->
+<!--    		SELECT NOTICE_SEQ.NEXTVAL -->
+<!--    			FROM DUAL -->
+<!--    	</selectKey> -->
+<!--    	INSERT INTO NOTICE(NOTICE_NO, -->
+<!-- 						MNGR_ID, -->
+<!-- 						NOTICE_SJ, -->
+<!-- 						NOTICE_CN, -->
+<!-- 						NOTICE_INPUT_DE, -->
+<!-- 						NOTICE_DELETE, -->
+<!-- 						NOTICE_HIT) -->
+<!-- 				VALUES(#notice_no#, -->
+<!-- 						#mngr_id#, -->
+<!-- 						#notice_sj#, -->
+<!-- 						#notice_cn#, -->
+<!-- 						sysdate, -->
+<!-- 						'n', -->
+<!-- 						0) -->
+   
+<!--    </insert> -->
+<!--    <update id="deletenotice" parameterClass="Map"> -->
+<!--    		UPDATE NOTICE -->
+<!--    		SET NOTICE_DELETE ='y' -->
+<!--    		WHERE NOTICE_NO =#notice_no# -->
+<!--    </update> -->
+   
+<!--    <update id="updatenotice" parameterClass="noticeVO"> -->
+<!--    		UPDATE NOTICE -->
+<!--    		SET NOTICE_SJ=#notice_sj#, -->
+<!-- 			NOTICE_CN=#notice_cn# -->
+<!-- 		WHERE NOTICE_NO = #notice_no# -->
+<!--    </update> -->
+<!--    <insert id="insertCultivationMethod" parameterClass="cultivationmethodVO"> -->
+<!--       <selectKey keyProperty="ctvt_mth_no" resultClass="string"> -->
+<!--          SELECT CULTIVATION_METHOD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO CULTIVATION_METHOD(CTVT_MTH_NO -->
+<!-- 			                        ,MBER_NCNM -->
+<!-- 			                        ,CTVT_MTH_SJ -->
+<!-- 			                        ,CTVT_MTH_CN -->
+<!-- 			                       	) -->
+<!-- 		                     VALUES(#ctvt_mth_no# -->
+<!-- 			                        ,#mber_ncnm# -->
+<!-- 			                        ,#ctvt_mth_sj# -->
+<!-- 			                        ,#ctvt_mth_cn# -->
+<!-- 			                        ) -->
+<!--    </insert> -->
+   
+<!--    <update id="deleteFreeboard" parameterClass="map" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			SET BO_STATUS = 'n' -->
+<!--    			WHERE BO_NO = #bo_no#  -->
+<!--    </update> -->
+   
+<!--    <update id="updateFreeboard" parameterClass="freeboardVO"> -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			SET   BO_TITLE = #bo_title# -->
+<!--                  ,BO_NICKNAME = #bo_nickname# -->
+<!--                  ,BO_PWD = #bo_pwd# -->
+<!--                  ,BO_MAIL = #bo_mail# -->
+<!--                  ,BO_CONTENT = #bo_content#  -->
+<!--             WHERE BO_NO = #bo_no# -->
+<!--    </update> -->
+   
+   <!-- 댓글 쿼리 -->
+<!--    <select id="incrementSeq" parameterClass="freeboardVO" resultClass="string"> -->
+<!--    			 SELECT MAX(BO_SEQ) + 1  -->
+<!--    			 FROM 	FREEBOARD  -->
+<!--    			 WHERE 	BO_GROUP = #bo_group#   -->
+<!--    </select> -->
+   
+<!--    <update id="updateSeq"  parameterClass="freeboardVO" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			   SET BO_SEQ = BO_SEQ + 1  -->
+<!--    			 WHERE BO_GROUP = #bo_group#  -->
+<!--    			<![CDATA[ -->
+<!--    			   AND BO_SEQ 	> #bo_seq#  -->
+<!--    			]]>  -->
+   
+<!--    </update> -->
+   
+<!--    <insert id="insertFreeboardReply" parameterClass="freeboardVO"> -->
+<!--    	  <selectKey keyProperty="bo_no" resultClass="string"> -->
+<!--           SELECT FREEBOARD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO FREEBOARD(BO_NO -->
+<!--                         ,BO_TITLE -->
+<!--                         ,BO_WRITER -->
+<!--                         ,BO_NICKNAME -->
+<!--                         ,BO_PWD -->
+<!--                         ,BO_MAIL -->
+<!--                         ,BO_IP -->
+<!--                         ,BO_CONTENT -->
+<!--                         ,BO_GROUP -->
+<!--                         ,BO_SEQ -->
+<!--                         ,BO_DEPTH) -->
+<!--                      VALUES(#bo_no# -->
+<!--                         ,#bo_title# -->
+<!--                         ,#bo_writer# -->
+<!--                         ,#bo_nickname# -->
+<!--                         ,#bo_pwd# -->
+<!--                         ,#bo_mail# -->
+<!--                         ,#bo_ip# -->
+<!--                         ,#bo_content# -->
+<!--                         ,#bo_group# -->
+<!--                         ,#bo_seq# -->
+<!--                         ,#bo_depth#) -->
+   				   
+<!--    </insert> -->
+   <!-- 댓글 쿼리 끝 -->
+   
+   <!-- 페이지 쿼리 -->
+<!--    <select id="totalCount" parameterClass="map" resultClass="int"> -->
+<!--    			SELECT COUNT(notice_no) -->
+<!--    			  FROM NOTICE  -->
+<!--    			 WHERE NOTICE_DELETE = 'n'  -->
+<!--    			 <include refid="searchCondition"/>  -->
+<!--    </select> -->
+   
+<!--    <update id="updateHit" parameterClass="map"> -->
+<!--        UPDATE NOTICE  -->
+<!--       SET NOTICE_HIT = notice_hit + 1 -->
+<!--       WHERE NOTICE_NO = #notice_no# -->
+<!--     </update> -->
+   
+   
+</sqlMap>    
+
+
+
+
+
+
+
+

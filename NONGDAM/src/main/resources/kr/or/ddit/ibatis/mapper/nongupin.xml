@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="nongupin">
+   <typeAlias alias="nongupinVO" type="kr.or.ddit.vo.NongupinVO"></typeAlias>
+   
+   <resultMap id="nongupinMap" class="nongupinVO">
+		<result property="farm_in_no" column="farm_in_no"/>
+		<result property="mber_ncnm" column="mber_ncnm"/>
+		<result property="farm_in_gu" column="farm_in_gu"/>
+		<result property="farm_in_rdcnt" column="farm_in_rdcnt"/>
+		<result property="farm_in_answer_at" column="farm_in_answer_at"/>
+		<result property="farm_in_sj" column="farm_in_sj"/>
+		<result property="farm_in_cn" column="farm_in_cn"/>
+		<result property="farm_in_seed" column="farm_in_seed"/>
+		<result property="farm_in_tag" column="farm_in_tag"/>
+		<result property="farm_in_input_de" column="farm_in_input_de"/>
+		<result property="items" column="farm_in_no" select="nongupinFileItem.nongupinFileItemList"/>
+	</resultMap>
+	
+
+   <resultMap id="nongupinAnswerMap" class="nongupinVO">
+		<result property="answer_no" column="answer_no"/>
+		<result property="farm_in_no" column="farm_in_no"/>
+		<result property="mber_ncnm" column="mber_ncnm"/>
+		<result property="answer_cn" column="answer_cn"/>
+		<result property="answer_input_de" column="answer_input_de"/>
+		<result property="answer_choice_at" column="answer_choice_at"/>
+		<result property="answer_check" column="answer_check"/>
+	</resultMap>
+
+   
+   <sql id="selectAll">
+      	SELECT *
+		FROM FARMING_IN
+   </sql>
+   <sql id="selectAnswer">
+      	SELECT *
+		FROM ANSWER
+   </sql>
+   
+   <sql id="searchCondition">
+	<dynamic prepend="WHERE">
+		<isNotEmpty property="search_keyword" open="(" close=")">
+			<isEqual property="search_keycode" compareValue="TOTAL">
+				FARM_IN_SJ LIKE '%' || #search_keyword# ||'%'
+				OR MBER_NCNM LIKE '%'||#search_keyword# ||'%'
+				OR FARM_IN_GU LIKE '%'||#search_keyword# ||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="TITLE">
+				FARM_IN_SJ LIKE '%' || #search_keyword# ||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="WRITER">
+				MBER_NCNM LIKE '%' || #search_keyword# ||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="GU">
+				FARM_IN_GU LIKE '%' || #search_keyword# ||'%'
+			</isEqual>
+		</isNotEmpty>
+	</dynamic>
+   </sql>
+   
+   
+   
+	<select id="nongupinInfo" parameterClass="map" resultMap="nongupinMap">
+		<include refid="selectAll"/>
+		 WHERE FARM_IN_NO = #farm_in_no#
+	</select>
+   
+	 <select id="nongupinList" parameterClass="map" resultMap="nongupinMap">
+		SELECT B.*
+		  FROM (SELECT ROWNUM RNUM, A.*
+				  FROM (<include refid="selectAll"/>
+				  		<include refid="searchCondition"/>
+						 ORDER BY FARM_IN_NO ) A) B
+	    <![CDATA[
+		WHERE B.RNUM <= #startCount# 
+		  AND B.RNUM >= #endCount# 
+	 ]]> 
+		 ORDER BY RNUM DESC
+	</select>
+	
+	 <select id="nongupinAnswerList" parameterClass="map" resultMap="nongupinAnswerMap">
+		<include refid="selectAnswer"/>
+  			WHERE FARM_IN_NO = #farm_in_no#
+  			ORDER BY ANSWER_INPUT_DE DESC
+	</select>
+   
+   <insert id="nongupinIns" parameterClass="nongupinVO">
+		<selectKey keyProperty="farm_in_no" resultClass="string">
+			SELECT FARM_IN_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+			INSERT INTO FARMING_IN(
+			FARM_IN_NO
+			,MBER_NCNM
+			,FARM_IN_GU
+			,FARM_IN_SJ
+			,FARM_IN_CN
+			,FARM_IN_SEED
+			,FARM_IN_TAG
+			,FARM_IN_INPUT_DE)
+			VALUES(
+			#farm_in_no#
+			,#mber_ncnm#
+			,#farm_in_gu#
+			,#farm_in_sj#
+			,#farm_in_cn#
+			,#farm_in_seed#
+			,#farm_in_tag#
+			,TO_CHAR(SYSDATE, 'YYMMDD'))
+	</insert>
+	
+   <insert id="nongupinAnswerIns" parameterClass="nongupinVO">
+		<selectKey keyProperty="answer_no" resultClass="string">
+			SELECT ANSWER_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+			INSERT INTO ANSWER(
+			ANSWER_NO
+			,FARM_IN_NO
+			,MBER_NCNM
+			,ANSWER_CN
+			,ANSWER_INPUT_DE)
+			VALUES(
+			#answer_no#
+			,#farm_in_no#
+			,#mber_ncnm#
+			,#answer_cn#
+			,TO_CHAR(SYSDATE, 'YYMMDD'))
+	</insert>
+   
+   <select id="guNM" parameterClass="map" resultClass="nongupinVO">
+		SELECT FARM_IN_NM
+		FROM FARMING_IN_CTGRY
+	</select>
+
+   <!-- 조회수 -->
+	<update id="updateHit" parameterClass="map">
+		UPDATE FARMING_IN
+		   SET FARM_IN_RDCNT = FARM_IN_RDCNT + 1
+		 WHERE FARM_IN_NO = #farm_in_no#
+	</update>
+	
+   <!-- 답글등록확인 -->
+	<update id="updateAnswer" parameterClass="String">
+		UPDATE FARMING_IN
+		   SET FARM_IN_ANSWER_AT = 'y'
+		 WHERE FARM_IN_NO = #farm_in_no#
+	</update>
+	
+	<!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(FARM_IN_NO)
+   			  FROM FARMING_IN
+   			 <include refid="searchCondition"/> 
+   			  
+   </select>
+   
+   <select id="categoryList" parameterClass="map" resultMap="nongupinMap">
+		SELECT B.*
+		  FROM (SELECT ROWNUM RNUM, A.*
+				  FROM (<include refid="selectAll"/>
+				  		<dynamic prepend="WHERE">
+				  			<isNotEmpty property="farm_in_gu">
+				  				FARM_IN_GU = #farm_in_gu#
+				  			</isNotEmpty>
+				  		</dynamic>
+						) A) B
+	    <![CDATA[
+		WHERE B.RNUM <= #startCount# 
+		  AND B.RNUM >= #endCount# 
+	 ]]> 
+		 ORDER BY RNUM DESC
+	</select>
+   
+   <!-- 씨앗 감소 -->
+   <update id="memberseed" parameterClass="nongupinVO">
+   		UPDATE MEMBER
+		   SET MBER_SEED = MBER_SEED - #farm_in_seed#
+		 WHERE MBER_NCNM = #mber_ncnm#
+   </update>
+   
+   
+   <!-- 질문답변현황 -->
+   <update id="answerCheck" parameterClass="String">
+   		UPDATE ANSWER
+		   SET ANSWER_CHECK = 'o'
+		 WHERE FARM_IN_NO = #farm_in_no#
+   </update>
+   
+   <!-- 질문채택 -->
+   <update id="answerSelect" parameterClass="String">
+   		UPDATE ANSWER
+		   SET ANSWER_CHOICE_AT = 'y'
+		 WHERE ANSWER_NO = #answer_no#
+   </update>
+   
+   <!-- 채택씨앗받기 -->
+   <update id="answerSeed" parameterClass="nongupinVO">
+   		UPDATE MEMBER
+		   SET MBER_SEED = MBER_SEED + #farm_in_seed#
+		 WHERE MBER_NCNM = #mber_ncnm#
+   </update>
+   
+   <update id="updateNongupin" parameterClass="nongupinVO">
+   		UPDATE FARMING_IN
+		   SET FARM_IN_GU = #farm_in_gu#,
+		   	   FARM_IN_SJ = #farm_in_sj#,
+		   	   FARM_IN_SEED = #farm_in_seed#,
+		   	   FARM_IN_CN = #farm_in_cn#,
+		   	   FARM_IN_TAG = #farm_in_tag#
+		 WHERE FARM_IN_NO = #farm_in_no#
+   </update>
+   
+   <delete id="deleteNongupin" parameterClass="map">
+   		DELETE FROM FARMING_IN WHERE FARM_IN_NO = #farm_in_no#
+   </delete>
+   
+   <!-- 일일 질문 수 -->
+   <select id="dayFarmIn" resultClass="int">
+   		SELECT COUNT(*)
+   		  FROM FARMING_IN
+   		 WHERE FARM_IN_INPUT_DE like SYSDATE
+   </select>
+   
+   <!-- 일일 답변 수 -->
+   <select id="dayAnswer" resultClass="int" >
+   		SELECT COUNT(*)
+   		  FROM ANSWER
+   		 WHERE ANSWER_INPUT_DE = TO_CHAR(SYSDATE, 'YYMMDD')
+   </select>
+   
+   <select id="maximumFarmInNo" resultClass="int">
+   	SELECT MAX(FARM_IN_NO) FROM FARMING_IN
+   </select>
+   
+</sqlMap>    

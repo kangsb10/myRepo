@@ -1,0 +1,159 @@
+<%@ page language="JAVA" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+
+<head>
+<!--
+
+
+
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+
+
+
+	 Bootstrap CSS
+   ================================================== -->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+
+	<!-- Animate CSS
+   ================================================== -->
+	<link rel="stylesheet" href="css/animate.min.css">
+
+	<!-- Font Icons CSS
+   ================================================== -->
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/ionicons.min.css">
+
+	<!-- Main CSS
+   ================================================== -->
+	<link rel="stylesheet" href="css/style.css">
+
+	<!-- Google web font 
+   ================================================== -->	
+<!--   <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,300' rel='stylesheet' type='text/css'> -->
+  <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap&subset=korean" rel="stylesheet">
+	<style>
+      h1,p,span,a,div,option,input,td {
+        font-family: 'Do Hyeon', sans-serif;
+         color: #585858;
+      }
+      
+      h1 {
+        font-weight: 400;
+         font-size: 25px;
+         color: #FEEACC;
+      }
+      
+      
+      span,a {
+        font-weight: 300;
+         font-size: 20px;
+         color: #FBD9A7;
+      }
+      
+      
+      
+      p {
+        font-weight: 200;
+        font-size: 15px;
+        color: #FFFFFF;
+      }
+      
+     option,input {
+        color: #346D4E;
+      }
+      
+      div#a, div#b {
+        font-weight: 200;
+        font-size: 40px;
+        color: #FFFFFF;
+      }
+      
+      th {
+      text-align: center;
+      }
+      
+      
+    </style>
+</head>
+
+
+<div id="" style="position: relative; top: 100px;" >
+	<div class="" >
+    	<div class="" style="font-size: 30px; color:#0B3B24;" >문의내역</div>
+		<table class="" style="position: relative; top: 20px; ">
+			<thead>
+				<tr style="border-bottom: 1px solid #848484; text-align: center; ">
+					<th scope="col" width="10%">번호</th>
+					<th scope="col" width="40%">제목</th>
+					<th scope="col" width="10%">작성자</th>
+					<th scope="col" width="10%">작성일</th>
+					<th scope="col" width="15%">조회수</th>
+					<th scope="col" width="15%">답변</th>
+				</tr>
+			</thead>
+			<tbody id="customerCenterTBL" >
+				<c:choose>
+					<c:when test="${empty customerCenterList }">
+						<tr>
+							<td colspan="6" align="center"><font color="red">등록된 게시글이 없습니다.</font></td>
+						</tr>
+					</c:when>
+					<c:otherwise>
+							<c:if test="${ mber_id ne login_mberInfo.mber_id }">
+								<tr>
+									<td colspan="6" align="center"><font color="red">등록된 게시글이 없습니다.</font></td>
+								</tr>
+							</c:if>
+						<c:if test="${ mber_id eq login_mberInfo.mber_id }">
+							<c:forEach items="${customerCenterList }" var="customerCenterInfo">
+								<c:if test="${customerCenterInfo.mber_id eq login_mberInfo.mber_id }">
+								<tr>
+									<td><input type="hidden" value="${customerCenterInfo.cstmr_cnter_no}">${customerCenterInfo.rnum}</td>
+									<td>${customerCenterInfo.cstmr_cnter_sj}</td>
+									<td>${customerCenterInfo.mber_ncnm}</td>
+									<td>${customerCenterInfo.cstmr_cnter_input_de}</td>
+									<td>${customerCenterInfo.cstmr_cnter_hit}</td>
+									<td>${customerCenterInfo.cstmr_cnter_answer}</td>
+								</tr>
+								</c:if>
+							</c:forEach>
+						</c:if>	
+					</c:otherwise>
+				</c:choose>
+			</tbody>
+		</table>
+			<div style="position: relative; top: 30px;">
+				${pagingHtmls }
+			</div>
+	</div>
+</div>
+
+
+<!-- Javascript 
+================================================== -->
+<script src="/js/main/jquery.js"></script>
+<script src="/js/main/wow.min.js"></script>
+<script src="/js/main/custom.js"></script>
+<script type="text/javascript">
+$(function(){
+
+	$("#customerCenterTBL tr").click(function(){
+		var cstmr_cnter_no = $(this).find("td:eq(0) input").val();
+		var search_keyword = encodeURIComponent('${search_keyword}');
+		var search_keycode = '${search_keycode}';
+		var currentPage = '${currentPage}';
+		$(location).attr("href", "${pageContext.request.contextPath}/user/customercenter/statementView.do?cstmr_cnter_no=" + cstmr_cnter_no + '&search_keyword=' + search_keyword + '&search_keycode=' +search_keycode+ '&currentPage=' + currentPage);		
+		
+	});
+	
+});
+</script>
+
+</html>

@@ -1,0 +1,151 @@
+<%@ page language="JAVA" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+<!--
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+
+
+
+	<!-- Bootstrap CSS
+   ================================================== -->
+<!-- 	<link rel="stylesheet" href="css/bootstrap.min.css"> -->
+
+	<!-- Animate CSS
+   ================================================== -->
+<!-- 	<link rel="stylesheet" href="css/animate.min.css"> -->
+
+	<!-- Font Icons CSS
+   ================================================== -->
+<!-- 	<link rel="stylesheet" href="css/font-awesome.min.css"> -->
+<!-- 	<link rel="stylesheet" href="css/ionicons.min.css"> -->
+
+	<!-- Main CSS
+   ================================================== -->
+<!-- 	<link rel="stylesheet" href="css/style.css"> -->
+
+	<!-- Google web font 
+   ================================================== -->	
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,300' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap&subset=korean" rel="stylesheet">
+	<style>
+      h1,p,span,a,div,option,input,td {
+        font-family: 'Do Hyeon', sans-serif;
+         color: #585858;
+      }
+      
+      h1 {
+        font-weight: 400;
+         font-size: 25px;
+         color: #FEEACC;
+      }
+      
+      
+      span,a {
+        font-weight: 300;
+         font-size: 20px;
+         color: #FBD9A7;
+      }
+      
+      
+      
+      p {
+        font-weight: 200;
+        font-size: 15px;
+        color: #FFFFFF;
+      }
+      
+     option,input {
+        color: #346D4E;
+      }
+      
+      div#a, div#b {
+        font-weight: 200;
+        font-size: 40px;
+        color: #FFFFFF;
+      }
+      
+      th {
+      font-size: 20px;
+      text-align: center;
+      }
+      
+      
+    </style>
+</head>
+
+
+<div id="" style="position: relative; top: 100px;">
+	<div class="" >
+    	<div class="" style="font-size: 30px; color:#0B3B24;" >스마트팜</div>
+		<table class="" id="farmTBL" style="position: relative; top: 20px; left: 15px;">
+			<thead>
+				<tr style="border-bottom: 1px solid #848484; text-align: center; ">
+					<th scope="col" width="20%" style="font-size: 17px;">농장아이디</th>
+					<th scope="col" width="60%">농장 주소</th>
+					<th scope="col" width="20%">작물</th>
+				</tr>
+			</thead>
+			<tbody id="farmTBL">
+			<c:choose>
+				<c:when test="${empty farmList }">
+					<tr>
+						<td colspan="2" align="center"><font color="red">등록된 농장이 없습니다.</font></td>
+					</tr>
+				</c:when>
+				<c:otherwise>
+					<c:forEach items="${farmList }" var="farmInfo">
+						<tr>
+							<td>${farmInfo.farm_id}</td>
+							<td>${farmInfo.farm_adres}</td>
+							<!-- 작물이름 넣기  -->
+							<td>${farmInfo.farm_crops}</td>
+							
+						</tr>
+					</c:forEach>
+				</c:otherwise>
+			</c:choose>
+			</tbody>
+		</table>
+		
+		<div style="position: relative; top: 30px;">
+<!-- 		<button type="button" class="" style=" color: #fff; background: #346D4E; height: 34px" id="farmFormBt"><i class="fa fa-plus"></i></button> -->
+	    	<button type="button" id="farmFormBt" style=" color: #fff; background: #E16422; border-radius: 20px; padding: 5px 12px 5px 12px; border: 0; position: relative; left: 170px; top: -110px; " >+</button>
+	    	<button type="button" id="sms" style=" color: #fff; background: #E16422; border-radius: 20px; padding: 5px 12px 5px 12px; border: 0; position: relative; left: 170px; top: -110px; " >문자보내기</button>
+		</div>
+	</div>
+</div>
+<div style="position:absolute; top: 570px;" >
+</div>	
+<script type="text/javascript">
+$(function(){
+	$('#farmFormBt').click(function(){
+		$(location).attr("href", "${pageContext.request.contextPath}/user/sfms/farmForm.do?mber_id=${login_mberInfo.mber_id }");
+	});
+	$('#sms').click(function(){
+		$(location).attr("href", "${pageContext.request.contextPath}/user/sfms/sms.do");
+	});
+	
+	
+
+// 	$("#farmTBL tr").click(function(){
+// 		var ctvt_mth_no = $(this).find("td:eq(0) input").val();
+// 		$(location).attr("href", "${pageContext.request.contextPath}/user/cultivationmethod/cultivationMethodView.do?ctvt_mth_no=" + ctvt_mth_no);		
+// 	});
+	
+	$("#farmTBL tr").click(function(){
+	      var farm_id = $(this).find("td:eq(0)").text();
+	      $(location).attr("href", "${pageContext.request.contextPath}/user/sfms/farmView.do?farm_id=" + farm_id);    
+	   });
+});
+
+
+</script>
+</html>

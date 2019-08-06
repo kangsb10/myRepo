@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+
+	<settings cacheModelsEnabled="true"
+			enhancementEnabled="true"
+			lazyLoadingEnabled="true" 
+			maxRequests="32" 
+			maxSessions="10"
+			maxTransactions="5" 
+			useStatementNamespaces="true" />
+			
+	<!--
+		java JDBC : autoCommit(false)으로 트랜잭션 처리
+		            autoCommit(false)-commit()
+					                 -rollback()
+		iBatis JDBC : auto transaction으로 트랜잭션 처리.
+		              iBatis는 모든 쿼리를 트랜잭션 단위로 처리.
+					  로컬 트랜잭션 처리 startTransaction();
+					                     commitTransaction();
+										 endTransaction();
+	-->
+	
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/member.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/nongupin.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/nongupinfileitem.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/cultivationmethod.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/cultivationmethodfileitem.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/bulletinboardfileitem.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/shoppingfileitem.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/shopping.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/community.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/buyer.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/notice.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/noticefileitem.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/customercenter.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/sfms.xml" />
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/cropsdoctor.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/cstmranswer.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/farmingdiary.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/farmingfileitem.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/sensor.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/sensorfileitem.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/communityfileitem.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/payment.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/emergencymbtlnum.xml"/>
+	
+	
+</sqlMapConfig>
+
+
+
+
+
+

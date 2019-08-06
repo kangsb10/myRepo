@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="cultivationmethodfileitem">
+	<typeAlias alias="cultivationmethodfileitemVO" type="kr.or.ddit.vo.CultivationMethodFileItemVO"></typeAlias>
+	
+	<statement id="cultivationMethodFileItemList" resultClass="cultivationmethodfileitemVO">
+		SELECT * 
+		 FROM CULTIVATION_METHOD_FILE_ITEM 
+		 WHERE CTVT_MTH_NO = #ctvt_mth_no#
+	</statement>
+	
+	<insert id="insertCultivationMethodFileItem" parameterClass="cultivationmethodfileitemVO">
+		<selectKey keyProperty="ctvt_mth_file_seq">
+			SELECT CULTIVATION_METHOD_FILE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO CULTIVATION_METHOD_FILE_ITEM(CTVT_MTH_FILE_SEQ,        
+												 CTVT_MTH_NO,       
+												 CTVT_MTH_FILE_NAME,        
+												 CTVT_MTH_FILE_SAVE_NAME,   
+												 CTVT_MTH_FILE_CONTENT_TYPE,
+												 CTVT_MTH_FILE_SIZE)		
+										 VALUES(#ctvt_mth_file_seq#,        
+												#ctvt_mth_no#,       
+												#ctvt_mth_file_name#,        
+												#ctvt_mth_file_save_name#,   
+												#ctvt_mth_file_content_type#,
+												#ctvt_mth_file_size#)
+	</insert>
+	
+	<select id="cultivationMethodFileItemInfo" parameterClass="map" resultClass="cultivationmethodfileitemVO">
+			SELECT * FROM CULTIVATION_METHOD_FILE_ITEM WHERE CTVT_MTH_FILE_SEQ = #ctvt_mth_file_seq#	
+	</select>
+</sqlMap>    
+
+
+
+
+
+
+
+
+

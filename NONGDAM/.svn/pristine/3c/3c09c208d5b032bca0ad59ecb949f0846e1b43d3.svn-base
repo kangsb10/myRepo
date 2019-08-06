@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="payment">
+   <typeAlias alias="paymentVO" type="kr.or.ddit.vo.PaymentVO"></typeAlias>
+   
+   
+   <sql id="selectAll">
+      SELECT PAYMENT_ID, (SELECT GOODS_NM FROM GOODS WHERE GOODS_ID = t1.GOODS_ID)as GOODS_ID,
+      	 MBER_ID, GOODS_QTY, TOTAL_PRICE, PAYMENT_DAY FROM PAYMENT t1 WHERE MBER_ID = #mber_id#
+   </sql>
+   
+   
+   
+   <select id="paymentList"  parameterClass="map" resultClass="paymentVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+<!--    <insert id="insertCultivationMethod" parameterClass="cultivationmethodVO"> -->
+<!--       <selectKey keyProperty="ctvt_mth_no" resultClass="string"> -->
+<!--          SELECT CULTIVATION_METHOD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO CULTIVATION_METHOD(CTVT_MTH_NO -->
+<!-- 			                        ,MBER_NCNM -->
+<!-- 			                        ,CTVT_MTH_SJ -->
+<!-- 			                        ,CTVT_MTH_CN -->
+<!-- 			                       	) -->
+<!-- 		                     VALUES(#ctvt_mth_no# -->
+<!-- 			                        ,#mber_ncnm# -->
+<!-- 			                        ,#ctvt_mth_sj# -->
+<!-- 			                        ,#ctvt_mth_cn# -->
+<!-- 			                        ) -->
+<!--    </insert> -->
+   
+<!--    <update id="deleteFreeboard" parameterClass="map" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			SET BO_STATUS = 'n' -->
+<!--    			WHERE BO_NO = #bo_no#  -->
+<!--    </update> -->
+   
+<!--    <update id="updateFreeboard" parameterClass="freeboardVO"> -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			SET   BO_TITLE = #bo_title# -->
+<!--                  ,BO_NICKNAME = #bo_nickname# -->
+<!--                  ,BO_PWD = #bo_pwd# -->
+<!--                  ,BO_MAIL = #bo_mail# -->
+<!--                  ,BO_CONTENT = #bo_content#  -->
+<!--             WHERE BO_NO = #bo_no# -->
+<!--    </update> -->
+   
+   <!-- 댓글 쿼리 -->
+<!--    <select id="incrementSeq" parameterClass="freeboardVO" resultClass="string"> -->
+<!--    			 SELECT MAX(BO_SEQ) + 1  -->
+<!--    			 FROM 	FREEBOARD  -->
+<!--    			 WHERE 	BO_GROUP = #bo_group#   -->
+<!--    </select> -->
+   
+<!--    <update id="updateSeq"  parameterClass="freeboardVO" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			   SET BO_SEQ = BO_SEQ + 1  -->
+<!--    			 WHERE BO_GROUP = #bo_group#  -->
+<!--    			<![CDATA[ -->
+<!--    			   AND BO_SEQ 	> #bo_seq#  -->
+<!--    			]]>  -->
+   
+<!--    </update> -->
+   
+<!--    <insert id="insertFreeboardReply" parameterClass="freeboardVO"> -->
+<!--    	  <selectKey keyProperty="bo_no" resultClass="string"> -->
+<!--           SELECT FREEBOARD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO FREEBOARD(BO_NO -->
+<!--                         ,BO_TITLE -->
+<!--                         ,BO_WRITER -->
+<!--                         ,BO_NICKNAME -->
+<!--                         ,BO_PWD -->
+<!--                         ,BO_MAIL -->
+<!--                         ,BO_IP -->
+<!--                         ,BO_CONTENT -->
+<!--                         ,BO_GROUP -->
+<!--                         ,BO_SEQ -->
+<!--                         ,BO_DEPTH) -->
+<!--                      VALUES(#bo_no# -->
+<!--                         ,#bo_title# -->
+<!--                         ,#bo_writer# -->
+<!--                         ,#bo_nickname# -->
+<!--                         ,#bo_pwd# -->
+<!--                         ,#bo_mail# -->
+<!--                         ,#bo_ip# -->
+<!--                         ,#bo_content# -->
+<!--                         ,#bo_group# -->
+<!--                         ,#bo_seq# -->
+<!--                         ,#bo_depth#) -->
+   				   
+<!--    </insert> -->
+   <!-- 댓글 쿼리 끝 -->
+   
+   <!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(*)
+   			  FROM PAYMENT 
+   			 WHERE MBER_ID = #mber_id#
+   </select>
+   
+   
+   
+</sqlMap>    
+
+
+
+
+
+
+
+

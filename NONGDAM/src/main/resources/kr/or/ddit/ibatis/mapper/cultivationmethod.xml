@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="cultivationmethod">
+   <typeAlias alias="cultivationmethodVO" type="kr.or.ddit.vo.CultivationMethodVO"></typeAlias>
+   
+    <resultMap class="cultivationmethodVO" id="cultivationmethodMap">
+      <result property="ctvt_mth_no" column="ctvt_mth_no"/>
+      <result property="mber_ncnm" column="mber_ncnm"/>
+      <result property="ctvt_mth_sj" column="ctvt_mth_sj"/>
+      <result property="ctvt_mth_cn" column="ctvt_mth_cn"/>
+      <result property="ctvt_mth_input_de" column="ctvt_mth_input_de"/>
+      
+      <result property="items" column="ctvt_mth_no" select="cultivationmethodfileitem.cultivationMethodFileItemList"/>
+   </resultMap>
+   
+   <sql id="selectAll">
+      SELECT *
+         FROM CULTIVATION_METHOD
+         WHERE CTVT_MTH_DELETE = 'n'
+   </sql>
+   
+   
+   
+   <sql id="searchCondition">
+   		<dynamic prepend="AND">
+    			<isNotEmpty property="search_keyword" open="(" close=")">
+    				<isEqual property="search_keycode" compareValue="TOTAL">
+    					 CTVT_MTH_SJ LIKE '%'||#search_keyword#||'%' 
+    					    OR MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    					    
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="TITLE">
+    					 CTVT_MTH_SJ LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    				<isEqual property="search_keycode" compareValue="WRITER">
+    					 MBER_NCNM LIKE '%'||#search_keyword#||'%' 
+    				</isEqual>
+    			</isNotEmpty>
+    		</dynamic>
+   </sql>
+   
+   <select id="cultivationmethodInfo" parameterClass="map" resultMap="cultivationmethodMap">
+      <include refid="selectAll"/>
+         AND ctvt_mth_no = #ctvt_mth_no#
+   </select>
+   
+   <select id="upCultivationmethodInfo" parameterClass="map" resultMap="cultivationmethodMap">
+      <include refid="selectAll"/>
+         AND ctvt_mth_no = #ctvt_mth_no#
+   </select>
+   
+   <select id="cultivationmethodList"  parameterClass="map" resultClass="cultivationmethodVO">
+   	   SELECT B.*
+	   FROM (SELECT ROWNUM RNUM , A.*
+	    FROM (  <include refid="selectAll"/> 
+	    
+	    		<include refid="searchCondition"/> 
+	    		)A) B 
+	    <![CDATA[
+		    WHERE B.RNUM <= #startCount# 
+		      AND B.RNUM >= #endCount# 
+   		]]>
+	    ORDER BY RNUM DESC 
+   </select>
+   
+   <insert id="insertCultivationMethod" parameterClass="cultivationmethodVO">
+      <selectKey keyProperty="ctvt_mth_no" resultClass="string">
+         SELECT CULTIVATION_METHOD_SEQ.NEXTVAL
+            FROM DUAL
+      </selectKey>
+      
+      INSERT INTO CULTIVATION_METHOD(CTVT_MTH_NO
+			                        ,MBER_NCNM
+			                        ,CTVT_MTH_SJ
+			                        ,CTVT_MTH_CN
+			                       	)
+		                     VALUES(#ctvt_mth_no#
+			                        ,#mber_ncnm#
+			                        ,#ctvt_mth_sj#
+			                        ,#ctvt_mth_cn#
+			                        )
+   </insert>
+   
+   <update id="deleteCultivationMethod" parameterClass="map" >
+   			UPDATE CULTIVATION_METHOD 
+   			SET CTVT_MTH_DELETE = 'y'
+   			WHERE CTVT_MTH_NO = #ctvt_mth_no# 
+   </update>
+   
+   <update id="updateCultivationMethod" parameterClass="cultivationmethodVO">
+   			UPDATE CULTIVATION_METHOD 
+   			SET   CTVT_MTH_SJ = #ctvt_mth_sj#
+   				 ,MBER_NCNM = #mber_ncnm#
+                 ,CTVT_MTH_CN = #ctvt_mth_cn#
+            WHERE CTVT_MTH_NO = #ctvt_mth_no#
+   </update>
+   
+   <update id="updateHit" parameterClass="map">
+       UPDATE CULTIVATION_METHOD 
+      SET CTVT_MTH_HIT = ctvt_mth_hit + 1
+      WHERE CTVT_MTH_NO = #ctvt_mth_no#
+    </update>
+   
+   <!-- 댓글 쿼리 -->
+<!--    <select id="incrementSeq" parameterClass="freeboardVO" resultClass="string"> -->
+<!--    			 SELECT MAX(BO_SEQ) + 1  -->
+<!--    			 FROM 	FREEBOARD  -->
+<!--    			 WHERE 	BO_GROUP = #bo_group#   -->
+<!--    </select> -->
+   
+<!--    <update id="updateSeq"  parameterClass="freeboardVO" > -->
+<!--    			UPDATE FREEBOARD  -->
+<!--    			   SET BO_SEQ = BO_SEQ + 1  -->
+<!--    			 WHERE BO_GROUP = #bo_group#  -->
+<!--    			<![CDATA[ -->
+<!--    			   AND BO_SEQ 	> #bo_seq#  -->
+<!--    			]]>  -->
+   
+<!--    </update> -->
+   
+<!--    <insert id="insertFreeboardReply" parameterClass="freeboardVO"> -->
+<!--    	  <selectKey keyProperty="bo_no" resultClass="string"> -->
+<!--           SELECT FREEBOARD_SEQ.NEXTVAL -->
+<!--             FROM DUAL -->
+<!--       </selectKey> -->
+      
+<!--       INSERT INTO FREEBOARD(BO_NO -->
+<!--                         ,BO_TITLE -->
+<!--                         ,BO_WRITER -->
+<!--                         ,BO_NICKNAME -->
+<!--                         ,BO_PWD -->
+<!--                         ,BO_MAIL -->
+<!--                         ,BO_IP -->
+<!--                         ,BO_CONTENT -->
+<!--                         ,BO_GROUP -->
+<!--                         ,BO_SEQ -->
+<!--                         ,BO_DEPTH) -->
+<!--                      VALUES(#bo_no# -->
+<!--                         ,#bo_title# -->
+<!--                         ,#bo_writer# -->
+<!--                         ,#bo_nickname# -->
+<!--                         ,#bo_pwd# -->
+<!--                         ,#bo_mail# -->
+<!--                         ,#bo_ip# -->
+<!--                         ,#bo_content# -->
+<!--                         ,#bo_group# -->
+<!--                         ,#bo_seq# -->
+<!--                         ,#bo_depth#) -->
+   				   
+<!--    </insert> -->
+   <!-- 댓글 쿼리 끝 -->
+   
+   <!-- 페이지 쿼리 -->
+   <select id="totalCount" parameterClass="map" resultClass="int">
+   			SELECT COUNT(CTVT_MTH_NO)
+   			  FROM CULTIVATION_METHOD
+   			  WHERE CTVT_MTH_DELETE = 'n'
+   			 <include refid="searchCondition"/> 
+   			  
+   </select>
+   
+   
+</sqlMap>    
+
+
+
+
+
+
+
+

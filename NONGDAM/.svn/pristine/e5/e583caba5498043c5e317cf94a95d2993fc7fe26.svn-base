@@ -1,0 +1,33 @@
+h1,p,span,a,div {
+	font-family: 'Do Hyeon', sans-serif;
+}
+
+h1 {
+	font-weight: 400;
+	font-size: 25px;
+	color: #E16422;
+}
+
+span,a {
+	font-weight: 600;
+	font-size: 18px;
+	color: #E16422;
+}
+
+p.a {
+	font-weight: 200;
+	font-size: 15px;
+	color: #346D4E;
+}
+
+p.b {
+	font-weight: 200;
+	font-size: 18px;
+	color: #346D4E;
+}
+
+div#a,div#b {
+	font-weight: 200;
+	font-size: 20px;
+	color: #346D4E;
+}

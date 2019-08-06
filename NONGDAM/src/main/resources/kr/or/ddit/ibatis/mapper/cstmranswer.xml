@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="cstmranswer">
+   <typeAlias alias="cstmranswerVO" type="kr.or.ddit.vo.CstmrAnswerVO"></typeAlias>
+   <typeAlias alias="customerCenterVO" type="kr.or.ddit.vo.CustomerCenterVO"></typeAlias>
+   
+<!--     <resultMap class="cultivationmethodVO" id="cultivationmethodMap"> -->
+<!--       <result property="ctvt_mth_no" column="ctvt_mth_no"/> -->
+<!--       <result property="mber_ncnm" column="mber_ncnm"/> -->
+<!--       <result property="ctvt_mth_sj" column="ctvt_mth_sj"/> -->
+<!--       <result property="ctvt_mth_cn" column="ctvt_mth_cn"/> -->
+<!--       <result property="ctvt_mth_input_de" column="ctvt_mth_input_de"/> -->
+      
+<!--       <result property="items" column="ctvt_mth_no" select="cultivationmethodfileitem.cultivationMethodFileItemList"/> -->
+<!--    </resultMap> -->
+   
+   <sql id="selectAll">
+      SELECT *
+         FROM CSTMR_CNTER_ANSWERT
+   </sql>
+   
+<!--    <select id="cstmrAnswerInfo" parameterClass="map" resultClass="cstmranswerVO"> -->
+<!--       <include refid="selectAll"/> -->
+<!--          WHERE ANSWER_NO = #answer_no# -->
+<!--    </select> -->
+   <select id="cstmrAnswerInfo" parameterClass="map" resultClass="cstmranswerVO">
+      <include refid="selectAll"/>
+         WHERE CSTMR_CNTER_NO = #cstmr_cnter_no#
+   </select>
+   
+   <insert id="insertCstmrAnswer" parameterClass="cstmranswerVO">
+      <selectKey keyProperty="answer_no" resultClass="string">
+         SELECT CSTMR_CNTER_ANSWER_SEQ.NEXTVAL
+            FROM DUAL
+      </selectKey>
+      
+      INSERT INTO CSTMR_CNTER_ANSWERT(ANSWER_NO
+      								,CSTMR_CNTER_NO
+			                        ,MNGR_ID
+			                        ,ANSWER_SJ
+			                        ,ANSWER_CN
+			                       	)
+		                     VALUES(#answer_no#
+		                     		,#cstmr_cnter_no#
+			                        ,'admin'
+			                        ,#answer_sj#
+			                        ,#answer_cn#
+			                        )
+   </insert>
+   
+   <update id="updateCstmrAnswer" parameterClass="cstmranswerVO">
+   			UPDATE CSTMR_CNTER_ANSWERT 
+   			SET   MNGR_ID = 'admin'
+   				 ,ANSWER_SJ = #answer_sj#
+                 ,ANSWER_CN = #answer_cn#
+                 ,CSTMR_CNTER_NO =  #cstmr_cnter_no#
+            WHERE ANSWER_NO = #answer_no#
+   </update>
+   
+   <update id="updateAnswer" parameterClass="customerCenterVO">
+   		UPDATE CUSTOMER_CENTER
+   			SET	CSTMR_CNTER_ANSWER = '등록'
+   			WHERE CSTMR_CNTER_NO = #cstmr_cnter_no#
+   </update>
+   
+</sqlMap>    
+
+
+
+
+
+
+
+
